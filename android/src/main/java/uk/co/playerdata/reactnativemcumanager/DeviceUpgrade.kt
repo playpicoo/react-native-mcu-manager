@@ -7,17 +7,27 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
+import io.runtime.mcumgr.McuMgrTransport
 import io.runtime.mcumgr.ble.McuMgrBleTransport
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController
 import io.runtime.mcumgr.dfu.FirmwareUpgradeManager
 import io.runtime.mcumgr.exception.McuMgrException
+import no.nordicsemi.android.ble.ConnectionPriorityRequest
 import java.io.IOException
 
 val UpgradeModes = mapOf(
     1 to FirmwareUpgradeManager.Mode.TEST_AND_CONFIRM,
     2 to FirmwareUpgradeManager.Mode.CONFIRM_ONLY,
     3 to FirmwareUpgradeManager.Mode.TEST_ONLY
+)
+
+val MemoryAlignments = mapOf(
+    1 to 1,
+    2 to 2,
+    3 to 4,
+    4 to 8,
+    5 to 16
 )
 
 class DeviceUpgrade(
@@ -63,8 +73,16 @@ class DeviceUpgrade(
         val estimatedSwapTime = updateOptions.getInt("estimatedSwapTime") * 1000
         val modeInt = if (updateOptions.hasKey("upgradeMode"))  updateOptions.getInt("upgradeMode") else 1
         val upgradeMode = UpgradeModes[modeInt] ?: FirmwareUpgradeManager.Mode.TEST_AND_CONFIRM
+        val windowUploadCapacity = if (updateOptions.hasKey("windowUploadCapacity")) updateOptions.getInt("windowUploadCapacity") else 1
+        val alignmentInt = if (updateOptions.hasKey("memoryAlignment")) updateOptions.getInt("memoryAlignment") else 1
+        val memoryAlignment = MemoryAlignments[alignmentInt] ?: 1
+        val requestConnectionPriority = if (updateOptions.hasKey("requestConnectionPriority")) updateOptions.getBoolean("requestConnectionPriority") else false
 
         dfuManager.setEstimatedSwapTime(estimatedSwapTime)
+        dfuManager.setWindowUploadCapacity(windowUploadCapacity)
+        dfuManager.setMemoryAlignment(memoryAlignment)
+
+        if(requestConnectionPriority) requestHighConnectionPriority()
 
         try {
             val stream = context.contentResolver.openInputStream(updateBundleUri)
@@ -121,4 +139,12 @@ class DeviceUpgrade(
             manager.updateProgressCB(progressMap)
         }
     }
+
+    private fun requestHighConnectionPriority() {
+        val transporter: McuMgrTransport = dfuManager.transporter
+        if (transporter is McuMgrBleTransport) {
+            transporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH)
+        }
+    }
+
 }

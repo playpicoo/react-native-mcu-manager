@@ -17,6 +17,7 @@ const useFirmwareUpdate = (
     }
 
     const upgrade = new Upgrade(bleId, updateFileUri, {
+      windowUploadCapacity:4,
       estimatedSwapTime: 60,
       upgradeMode,
     });

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import {
   Button,
   FlatList,
+  Image,
   Modal,
   SafeAreaView,
   ScrollView,
@@ -16,6 +17,7 @@ import { UpgradeMode } from '@playerdata/react-native-mcu-manager';
 import useBluetoothDevices from './useBluetoothDevices';
 import useFilePicker from './useFilePicker';
 import useFirmwareUpdate from './useFirmwareUpdate';
+import { MemoryAlignment } from '../../src/Upgrade';
 
 const styles = StyleSheet.create({
   root: {
@@ -40,6 +42,16 @@ export default function App() {
   const [upgradeMode, setUpgradeMode] = useState<UpgradeMode | undefined>(
     undefined
   );
+  const [windowUploadCapacity, setWindowUploadCapacity] = useState<number | undefined>(
+    undefined
+  );
+  const [memoryAlignment, setMemoryAlignment] = useState<MemoryAlignment | undefined>(
+    undefined
+  );
+  const [requestConnectionPriority, setRquestConnectionPriority] = useState<boolean | undefined>(
+    undefined
+  );
+
 
   const { devices, error: scanError } = useBluetoothDevices();
   const { selectedFile, filePickerError, pickFile } = useFilePicker();

@@ -28,11 +28,35 @@ export enum UpgradeMode {
   TEST_ONLY = 3,
 }
 
+export enum MemoryAlignment {
+  DISABLED = 1,
+  TWO_BYTES,
+  FOUR_BYTES,
+  EIGHT_BYTES,
+  SIXTEEN_BYTES
+}
+
 export interface UpgradeOptions {
   /**
    * The estimated time, in seconds, that it takes for the target device to swap to the updated image.
    */
   estimatedSwapTime: number;
+
+  /**
+   * The number of concurrent packets sent to the device when uploading the image. This may increase the upload speed when supported by the device.
+   */
+  windowUploadCapacity?: number;
+
+  /**
+   * 
+   */
+  memoryAlignment?: MemoryAlignment;
+
+  /**
+   * If true, an attempt is made to get high priority on bluetooth connections. This may improve transfer speed.
+   * @platform android
+   */
+  requestConnectionPriority?: boolean;
 
   /**
    * McuManager firmware upgrades can actually be performed in few different ways.

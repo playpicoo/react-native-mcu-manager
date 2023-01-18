@@ -6,6 +6,14 @@ enum JSUpgradeMode: Int {
     case TEST_ONLY = 3
 }
 
+enum JSMemoryAlignment:Int {
+  case DISABLED = 1
+  case TWO_BYTES = 2
+  case FOUR_BYTES = 3
+  case EIGHT_BYTES = 4
+  case SIXTEEN_BYTES = 5
+}
+
 class DeviceUpgrade {
     private let id: String
 
@@ -57,12 +65,13 @@ class DeviceUpgrade {
             self.dfuManager = FirmwareUpgradeManager(transporter: self.bleTransport!, delegate: self)
 
             let estimatedSwapTime: TimeInterval = options["estimatedSwapTime"] as! TimeInterval
+            
+            let pipelineDepth: Int = options["windowUploadCapacity"] as? Int ?? 1
 
+            let configuration = FirmwareUpgradeConfiguration(estimatedSwapTime: estimatedSwapTime, pipelineDepth: pipelineDepth, byteAlignment: getByteAlignment())
             self.dfuManager!.logDelegate = self.logDelegate
-            self.dfuManager!.estimatedSwapTime = estimatedSwapTime
             self.dfuManager!.mode = self.getMode();
-
-            try self.dfuManager!.start(data: file as Data)
+            try self.dfuManager!.start(data: file as Data, using: configuration)
         } catch {
             reject(error.localizedDescription, error.localizedDescription, error)
         }
@@ -94,6 +103,29 @@ class DeviceUpgrade {
             return FirmwareUpgradeMode.testOnly
         case .CONFIRM_ONLY:
             return FirmwareUpgradeMode.confirmOnly
+        }
+    }
+    
+    private func getByteAlignment() -> ImageUploadAlignment {
+        if self.options["memoryAlignment"] == nil {
+            return .disabled
+        }
+        
+        guard let jsAlignment = JSMemoryAlignment(rawValue: self.options["memoryAlignment"] as! Int) else {
+            return .disabled
+        }
+        
+        switch jsAlignment {
+        case .DISABLED:
+            return .disabled
+        case .TWO_BYTES:
+            return .twoByte
+        case .FOUR_BYTES:
+            return .fourByte
+        case .EIGHT_BYTES:
+            return .eightByte
+        case .SIXTEEN_BYTES:
+            return .sixteenByte
         }
     }
 }
