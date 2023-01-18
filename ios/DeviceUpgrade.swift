@@ -188,6 +188,8 @@ extension DeviceUpgrade: FirmwareUpgradeDelegate {
             return "CONFIRM"
         case .success:
             return "SUCCESS"
+        case .requestMcuMgrParameters:
+            return "VALIDATE"
         }
     }
 
