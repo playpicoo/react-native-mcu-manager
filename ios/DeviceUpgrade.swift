@@ -56,25 +56,28 @@ class DeviceUpgrade {
             return reject("error", "failed to parse file uri as url", error);
         }
 
-        do {
-            let filehandle = try FileHandle(forReadingFrom: fileUrl)
-            let file = Data(filehandle.availableData)
-            filehandle.closeFile()
+        DispatchQueue.main.async {
+            do {
+                let filehandle = try FileHandle(forReadingFrom: fileUrl)
+                let file = Data(filehandle.availableData)
+                filehandle.closeFile()
 
-            self.bleTransport = McuMgrBleTransport(bleUuid)
-            self.dfuManager = FirmwareUpgradeManager(transporter: self.bleTransport!, delegate: self)
+                self.bleTransport = McuMgrBleTransport(bleUuid)
+                self.dfuManager = FirmwareUpgradeManager(transporter: self.bleTransport!, delegate: self)
 
-            let estimatedSwapTime: TimeInterval = options["estimatedSwapTime"] as! TimeInterval
-            
-            let pipelineDepth: Int = options["windowUploadCapacity"] as? Int ?? 1
+                let estimatedSwapTime: TimeInterval = self.options["estimatedSwapTime"] as! TimeInterval
+                
+                let pipelineDepth: Int = self.options["windowUploadCapacity"] as? Int ?? 1
 
-            let configuration = FirmwareUpgradeConfiguration(estimatedSwapTime: estimatedSwapTime, pipelineDepth: pipelineDepth, byteAlignment: getByteAlignment())
-            self.dfuManager!.logDelegate = self.logDelegate
-            self.dfuManager!.mode = self.getMode();
-            try self.dfuManager!.start(data: file as Data, using: configuration)
-        } catch {
-            reject(error.localizedDescription, error.localizedDescription, error)
+                let configuration = FirmwareUpgradeConfiguration(estimatedSwapTime: estimatedSwapTime, pipelineDepth: pipelineDepth, byteAlignment: self.getByteAlignment())
+                self.dfuManager!.logDelegate = self.logDelegate
+                self.dfuManager!.mode = self.getMode();
+                try self.dfuManager!.start(data: file as Data, using: configuration)
+            } catch {
+                reject(error.localizedDescription, error.localizedDescription, error)
+            }
         }
+        
     }
 
     func cancel() {
