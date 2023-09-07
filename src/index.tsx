@@ -13,4 +13,8 @@ export const eraseImage = McuManager?.eraseImage as (
   bleId: string
 ) => Promise<void>;
 
+export const confirmImage = McuManager?.confirmImage as (
+  bleId: string
+) => Promise<void>;
+
 export { Upgrade, FirmwareUpgradeState, UpgradeOptions, UpgradeMode, MemoryAlignment };

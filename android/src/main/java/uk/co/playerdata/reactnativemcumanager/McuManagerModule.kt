@@ -40,6 +40,27 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) : Reac
     }
 
     @ReactMethod
+    fun confirmImage(macAddress: String?, promise: Promise) {
+        if (this.bluetoothAdapter == null) {
+            throw Exception("No bluetooth adapter")
+        }
+
+        try {
+            val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
+
+            var transport = McuMgrBleTransport(reactContext, device)
+            transport.connect(device).timeout(60000).await()
+
+            val imageManager = ImageManager(transport);
+            imageManager.confirm(null)
+
+            promise.resolve(null)
+        } catch (e: Throwable) {
+            promise.reject(e)
+        }
+    }
+
+    @ReactMethod
     fun createUpgrade(id: String, macAddress: String?, updateFileUriString: String?, updateOptions: ReadableMap) {
         if (this.bluetoothAdapter == null) {
             throw Exception("No bluetooth adapter")

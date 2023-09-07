@@ -20,6 +20,13 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
+                  confirmImage:
+                  NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
                   createUpgrade:
                   NSString
                   bleId: NSString
