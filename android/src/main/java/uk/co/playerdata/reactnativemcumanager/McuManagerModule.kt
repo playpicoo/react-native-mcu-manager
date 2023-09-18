@@ -54,6 +54,8 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) : Reac
             val imageManager = ImageManager(transport);
             imageManager.confirm(null)
 
+            transport.release()
+
             promise.resolve(null)
         } catch (e: Throwable) {
             promise.reject(e)
