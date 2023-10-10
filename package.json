@@ -1,5 +1,5 @@
 {
-  "name": "@playpicoo/react-native-mcu-manager",
+  "name": "@playerdata/react-native-mcu-manager",
   "title": "React Native MCU Manager",
   "version": "2.1.0-beta.1",
   "description": "React Native Wrappers for MCUMgr's Android / iOS client libraries",

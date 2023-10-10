@@ -25,7 +25,7 @@ const useFilePicker = (): {
       const res = await DocumentPicker.pickSingle(pickerArgs);
       const uri = res.fileCopyUri ? res.fileCopyUri : res.uri;
       setSelectedFile({ uri, name: uri.split(fileDelimiter).slice(-1)[0] });
-    } catch (err) {
+    } catch (err:any) {
       if (!DocumentPicker.isCancel(err)) {
         setSelectedFile(null);
         setError(err.message);
@@ -51,7 +51,7 @@ const useFilePicker = (): {
           '%2F'
         );
       }
-    } catch (err) {
+    } catch (err:any) {
       if (!DocumentPicker.isCancel(err)) {
         setSelectedFile(null);
         setError(err.message);

@@ -228,7 +228,7 @@ PODS:
     - React-Core
   - react-native-get-random-values (1.8.0):
     - React-Core
-  - react-native-mcu-manager (1.0.0):
+  - react-native-mcu-manager (2.1.0-beta.1):
     - iOSMcuManagerLibrary (~> 1.2.9)
     - React-Core
   - React-perflogger (0.68.1)
@@ -442,7 +442,7 @@ SPEC CHECKSUMS:
   react-native-ble-plx: f10240444452dfb2d2a13a0e4f58d7783e92d76e
   react-native-document-picker: 226068006be4c52f8ef7f32d855ee025a12e9e64
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
-  react-native-mcu-manager: dd85a062f74f26eb8730f580314adf53f4d8ef41
+  react-native-mcu-manager: 994b3dd52978f6dd8c8675c7203e6b487af9a5eb
   React-perflogger: 30ab8d6db10e175626069e742eead3ebe8f24fd5
   React-RCTActionSheet: 4b45da334a175b24dabe75f856b98fed3dfd6201
   React-RCTAnimation: d6237386cb04500889877845b3e9e9291146bc2e

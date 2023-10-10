@@ -12,12 +12,14 @@ import {
   View,
 } from 'react-native';
 
-import { UpgradeMode } from '@playerdata/react-native-mcu-manager';
+import { UpgradeMode, statFile } from '@playerdata/react-native-mcu-manager';
 
 import useBluetoothDevices from './useBluetoothDevices';
 import useFilePicker from './useFilePicker';
 import useFirmwareUpdate from './useFirmwareUpdate';
 import { MemoryAlignment } from '../../src/Upgrade';
+import useFileUpload from './useFileUpload';
+import useFileStat from './useFileStat';
 
 const styles = StyleSheet.create({
   root: {
@@ -29,6 +31,7 @@ const styles = StyleSheet.create({
   },
 
   list: {
+    backgroundColor: 'black',
     padding: 16,
   },
 });
@@ -60,6 +63,9 @@ export default function App() {
     selectedFile?.uri || null,
     upgradeMode
   );
+
+  const { startUpload, fileUploadState } = useFileUpload(selectedDeviceId, selectedFile?.uri || null)
+  const { startStat } = useFileStat(selectedDeviceId, selectedFile?.uri || null)
 
   return (
     <SafeAreaView>
@@ -156,6 +162,27 @@ export default function App() {
             title="Cancel Update"
           />
         </View>
+
+        <Text>Upload file</Text>
+
+        <View style={styles.block}>
+          <Button
+            disabled={!selectedFile || !selectedDeviceId}
+            onPress={() => startUpload()}
+            title="Upload File"
+          />
+        </View>
+
+        <Text>Stat file</Text>
+
+        <View style={styles.block}>
+          <Button
+            disabled={!selectedDeviceId}
+            onPress={() => startStat()}
+            title="Stat File"
+          />
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );

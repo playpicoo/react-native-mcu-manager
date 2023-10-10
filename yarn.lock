@@ -2312,9 +2312,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playpicoo/react-native-mcu-manager@workspace:.":
+"@playerdata/react-native-mcu-manager@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@playpicoo/react-native-mcu-manager@workspace:."
+  resolution: "@playerdata/react-native-mcu-manager@workspace:."
   dependencies:
     "@commitlint/cli": ^12.0.1
     "@commitlint/config-conventional": ^12.0.1

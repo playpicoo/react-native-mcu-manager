@@ -5353,16 +5353,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-document-picker@npm:^5.0.2":
-  version: 5.3.0
-  resolution: "react-native-document-picker@npm:5.3.0"
+"react-native-document-picker@npm:^9.0.1":
+  version: 9.0.1
+  resolution: "react-native-document-picker@npm:9.0.1"
   dependencies:
     invariant: ^2.2.4
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-windows: "*"
-  checksum: ba558d2d781f6e83b1c488f603246a35c0039402ff041f7c96315fd40cca16fa8e3a28bad1e5a5e54e0140ed20ab582cb6ca7017d1671ea252d9929aa4dd1b15
+  peerDependenciesMeta:
+    react-native-windows:
+      optional: true
+  checksum: a8ad0bc2ed13290e8d7ff5f77aa7e35ffda9fa380a7d01d1286111e92656415985d61469a50567b8bcb67e42c41a36b89e879d0d08b40d3fdda171eaa08721e4
   languageName: node
   linkType: hard
 
@@ -5398,7 +5401,7 @@ __metadata:
     react: 18.1.0
     react-native: 0.68.1
     react-native-ble-plx: ^2.0.2
-    react-native-document-picker: ^5.0.2
+    react-native-document-picker: ^9.0.1
     react-native-get-random-values: ^1.8.0
     typescript: ^4.6.4
   languageName: unknown

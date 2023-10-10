@@ -2,13 +2,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.reactnativemcumanager">
 
+    <!--  remove permissions, added by mcu manager library, to circumvent Android 12 issue  -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="28"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30"
+        tools:node="remove" />
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-permission
         android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation"
         tools:targetApi="s" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 
     <application
       android:name=".MainApplication"
