@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -29,7 +30,10 @@ const styles = StyleSheet.create({
   block: {
     marginBottom: 16,
   },
-
+  input: {
+    backgroundColor: 'white',
+    color: 'black'
+  },
   list: {
     backgroundColor: 'black',
     padding: 16,
@@ -42,6 +46,10 @@ export default function App() {
   const [selectedDeviceName, setSelectedDeviceName] = useState<string | null>(
     null
   );
+
+  const [uploadFilePath, onChangeUploadFilePath] = useState<string>("/ext/file.bin");
+  const [statFilePath, onChangeStatFilePath] = useState<string>("/ext/file.bin");
+
   const [upgradeMode, setUpgradeMode] = useState<UpgradeMode | undefined>(
     undefined
   );
@@ -64,8 +72,8 @@ export default function App() {
     upgradeMode
   );
 
-  const { startUpload, fileUploadState } = useFileUpload(selectedDeviceId, selectedFile?.uri || null)
-  const { startStat } = useFileStat(selectedDeviceId, selectedFile?.uri || null)
+  const { startUpload, fileUploadState, fileUploadProgress } = useFileUpload(selectedDeviceId, selectedFile?.uri || null, uploadFilePath)
+  const { startStat, fileSize, fileStatState } = useFileStat(selectedDeviceId, statFilePath)
 
   return (
     <SafeAreaView>
@@ -145,7 +153,7 @@ export default function App() {
         <Text style={styles.block}>Step 4 - Update</Text>
 
         <View style={styles.block}>
-          <Text>Update Progress / State:</Text>
+          <Text>Update State / Progress:</Text>
           <Text>
             {state}: {progress}
           </Text>
@@ -166,6 +174,11 @@ export default function App() {
         <Text>Upload file</Text>
 
         <View style={styles.block}>
+          <TextInput style={[styles.block, styles.input]} autoComplete='off' autoCorrect={false} value={uploadFilePath} onChangeText={onChangeUploadFilePath} />
+          <Text>Upload State / Progress:</Text>
+          <Text>
+            {fileUploadState}: {fileUploadProgress}
+          </Text>
           <Button
             disabled={!selectedFile || !selectedDeviceId}
             onPress={() => startUpload()}
@@ -174,13 +187,15 @@ export default function App() {
         </View>
 
         <Text>Stat file</Text>
-
+        <TextInput style={[styles.block, styles.input]} autoComplete='off' autoCorrect={false} value={statFilePath} onChangeText={onChangeStatFilePath} />
         <View style={styles.block}>
           <Button
             disabled={!selectedDeviceId}
             onPress={() => startStat()}
             title="Stat File"
           />
+          <Text>Size: {fileSize}</Text>
+          <Text>State: {fileStatState}</Text>
         </View>
 
       </ScrollView>

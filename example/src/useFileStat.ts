@@ -8,6 +8,7 @@ const useFileStat = (
 ) => {
 
     const [state, setState] = useState('');
+    const [fileSize, setFileSize] = useState<number>(0)
 
     useEffect(() => {
         if (!bleId || !fileUri) {
@@ -21,16 +22,17 @@ const useFileStat = (
     const startStat = async (): Promise<void> => {
         console.log(`starting file stat, file=${fileUri}, bleId=${bleId}`);
         
-        if (bleId === null) return
+        if (bleId === null || fileUri === null) return
         
         try {
-            await statFile(bleId, '/ext/file.bin')
+            const size = await statFile(bleId, fileUri)
+            setFileSize(size)
         } catch (ex: any) {
             setState(ex.message);
         }
     };
 
-    return { startStat, fileStatState: state };
+    return { startStat, fileStatState: state, fileSize };
 };
 
 export default useFileStat;

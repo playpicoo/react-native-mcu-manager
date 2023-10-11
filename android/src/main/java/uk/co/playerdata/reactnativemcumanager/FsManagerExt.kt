@@ -9,7 +9,7 @@ class FsManagerExt(transporter: McuMgrTransport) : FsManager(transporter) {
 
     private val ID_STATUS = 1
 
-    fun stat(
+    fun status(
         name: String,
         callback: McuMgrCallback<McuMgrFsDownloadResponse?>
     ) {

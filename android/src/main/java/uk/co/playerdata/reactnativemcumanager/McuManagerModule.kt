@@ -20,6 +20,7 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     private val TAG = "McuManagerModule"
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private val upgrades: MutableMap<String, DeviceUpgrade> = mutableMapOf()
+    private val uploads: MutableMap<String, FileUpload> = mutableMapOf()
 
     override fun getName(): String {
         return "McuManager"
@@ -40,7 +41,7 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
             transport.connect(device).timeout(60000).await()
 
             val fsManager = FsManagerExt(transport)
-            fsManager.stat(filePath!!, object : McuMgrCallback<McuMgrFsDownloadResponse?> {
+            fsManager.status(filePath!!, object : McuMgrCallback<McuMgrFsDownloadResponse?> {
                 override fun onResponse(p0: McuMgrFsDownloadResponse) {
                     Log.v("StatusResponse", "len=${p0.len}, rc=${p0.rc}")
                     promise.resolve(p0.len)
@@ -154,6 +155,46 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
         } catch (e: Throwable) {
             promise.reject(e)
         }
+    }
+
+    @ReactMethod
+    fun createFileUpload(
+        id: String,
+        macAddress: String?,
+        uploadFileUriString: String?,
+        uploadFilePath:String?
+    ) {
+        if (this.bluetoothAdapter == null) {
+            throw Exception("No bluetooth adapter")
+        }
+
+        if (uploads.contains(id)) {
+            throw Exception("Update ID already present")
+        }
+
+        val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
+        val uploadFileUri = Uri.parse(uploadFileUriString)
+
+        this.uploads[id] = FileUpload(id, device, reactContext, uploadFileUri, uploadFilePath)
+    }
+
+    @ReactMethod
+    fun runFileUpload(id: String, promise: Promise) {
+        if (!uploads.contains(id)) {
+            promise.reject(Exception("upload ID not present"))
+        }
+        uploads[id]!!.start(promise)
+    }
+
+    @ReactMethod
+    fun destroyFileUpload(id: String) {
+        if (!uploads.contains(id)) {
+            Log.w(this.TAG, "can't destroy upload ID ($id} not present")
+            return
+        }
+        Log.v(this.TAG, "destroying upload ID ($id}")
+        uploads[id]?.cancel()
+        uploads.remove(id)
     }
 
     @ReactMethod
