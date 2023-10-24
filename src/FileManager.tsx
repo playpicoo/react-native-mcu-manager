@@ -10,8 +10,8 @@ import {
   
   const McuManagerEvents = new NativeEventEmitter(McuManager);
   
-  declare const UpgradeIdSymbol: unique symbol;
-  type UpgradeID = string & { [UpgradeIdSymbol]: never };
+  declare const FileManagerIdSymbol: unique symbol;
+  type FileManagerID = string & { [FileManagerIdSymbol]: never };
   
   type AddFileUploadListener = {
     (
@@ -21,25 +21,18 @@ import {
     ): EmitterSubscription;
   };
   
-  class FileUpload {
-    private id: UpgradeID;
+  class FileManager {
+    private id: FileManagerID;
   
     constructor(
-      bleId: string,
-      uploadFileUriString: string,
-      uploadFilePath: string
+      bleId: string
     ) {
-      this.id = uuidv4() as UpgradeID;
-  
-      McuManager.createFileUpload(
-        this.id,
-        bleId,
-        uploadFileUriString,
-        uploadFilePath
-      );
+      this.id = uuidv4() as FileManagerID;
+      McuManager.createFileManager(this.id,bleId);
     }
   
-    start = async (): Promise<void> => McuManager.runFileUpload(this.id);
+    upload = async (sourceFileUriString: string, targetFilePath: string): Promise<void> => McuManager.uploadFile(this.id, sourceFileUriString, targetFilePath);
+    stat = async (filePath: string): Promise<number> => McuManager.statFile(this.id, filePath);
     
     addListener: AddFileUploadListener = (
       eventType: any,
@@ -66,5 +59,5 @@ import {
     };
   }
   
-  export default FileUpload;
+  export default FileManager;
   

@@ -9,7 +9,7 @@ import Upgrade, {
   MemoryAlignment
 } from './Upgrade';
 
-import FileUpload from './FileUpload';
+import FileManager from './FileManager';
 
 export const eraseImage = McuManager?.eraseImage as (
   bleId: string
@@ -19,9 +19,4 @@ export const confirmImage = McuManager?.confirmImage as (
   bleId: string
 ) => Promise<void>;
 
-export const statFile = McuManager?.statFile as (
-  bleId: string,
-  path: string
-) => Promise<number>
-
-export { Upgrade, FirmwareUpgradeState, UpgradeOptions, UpgradeMode, MemoryAlignment, FileUpload };
+export { Upgrade, FirmwareUpgradeState, UpgradeOptions, UpgradeMode, MemoryAlignment, FileManager };

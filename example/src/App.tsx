@@ -13,14 +13,13 @@ import {
   View,
 } from 'react-native';
 
-import { UpgradeMode, statFile } from '@playerdata/react-native-mcu-manager';
+import { UpgradeMode } from '@playerdata/react-native-mcu-manager';
 
 import useBluetoothDevices from './useBluetoothDevices';
 import useFilePicker from './useFilePicker';
 import useFirmwareUpdate from './useFirmwareUpdate';
 import { MemoryAlignment } from '../../src/Upgrade';
-import useFileUpload from './useFileUpload';
-import useFileStat from './useFileStat';
+import useFileManager from './useFileManager';
 
 const styles = StyleSheet.create({
   root: {
@@ -72,8 +71,7 @@ export default function App() {
     upgradeMode
   );
 
-  const { startUpload, fileUploadState, fileUploadProgress } = useFileUpload(selectedDeviceId, selectedFile?.uri || null, uploadFilePath)
-  const { startStat, fileSize, fileStatState } = useFileStat(selectedDeviceId, statFilePath)
+  const { uploadFile, statFile, fileSize, fileUploadProgress, fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath)
 
   return (
     <SafeAreaView>
@@ -171,31 +169,29 @@ export default function App() {
           />
         </View>
 
-        <Text>Upload file</Text>
-
+        <Text>File Manager</Text>
+        <Text>State: {fileManagerState}</Text>
         <View style={styles.block}>
           <TextInput style={[styles.block, styles.input]} autoComplete='off' autoCorrect={false} value={uploadFilePath} onChangeText={onChangeUploadFilePath} />
-          <Text>Upload State / Progress:</Text>
+          <Text>Progress:</Text>
           <Text>
-            {fileUploadState}: {fileUploadProgress}
+            {fileUploadProgress}
           </Text>
           <Button
             disabled={!selectedFile || !selectedDeviceId}
-            onPress={() => startUpload()}
+            onPress={() => uploadFile()}
             title="Upload File"
           />
         </View>
 
-        <Text>Stat file</Text>
         <TextInput style={[styles.block, styles.input]} autoComplete='off' autoCorrect={false} value={statFilePath} onChangeText={onChangeStatFilePath} />
         <View style={styles.block}>
           <Button
             disabled={!selectedDeviceId}
-            onPress={() => startStat()}
+            onPress={() => statFile()}
             title="Stat File"
           />
           <Text>Size: {fileSize}</Text>
-          <Text>State: {fileStatState}</Text>
         </View>
 
       </ScrollView>

@@ -20,97 +20,10 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     private val TAG = "McuManagerModule"
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private val upgrades: MutableMap<String, DeviceUpgrade> = mutableMapOf()
-    private val uploads: MutableMap<String, FileUpload> = mutableMapOf()
+    private val fileManagers: MutableMap<String, FileManager> = mutableMapOf()
 
     override fun getName(): String {
         return "McuManager"
-    }
-
-    @ReactMethod
-    fun statFile(
-        macAddress: String?,
-        filePath: String?,
-        promise: Promise
-    ) {
-        if (this.bluetoothAdapter == null) {
-            throw Exception("No bluetooth adapter")
-        }
-        try {
-            val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
-            var transport = McuMgrBleTransport(reactContext, device)
-            transport.connect(device).timeout(60000).await()
-
-            val fsManager = FsManagerExt(transport)
-            fsManager.status(filePath!!, object : McuMgrCallback<McuMgrFsDownloadResponse?> {
-                override fun onResponse(p0: McuMgrFsDownloadResponse) {
-                    Log.v("StatusResponse", "len=${p0.len}, rc=${p0.rc}")
-                    promise.resolve(p0.len)
-                }
-
-                override fun onError(p0: McuMgrException) {
-                    Log.e("StatusResponse", "error=${p0.localizedMessage}")
-                    promise.reject(p0)
-                }
-            })
-        } catch (err: McuMgrException) {
-            Log.e("StatusResponse", "error=${err.localizedMessage}")
-            promise.reject(err)
-        }
-    }
-
-    @ReactMethod
-    fun uploadFile(
-        macAddress: String?,
-        sourceFileUriString: String?,
-        targetFilePath: String?,
-        promise: Promise
-    ) {
-        if (this.bluetoothAdapter == null) {
-            throw Exception("No bluetooth adapter")
-        }
-
-        try {
-            val stream =
-                reactContext.contentResolver.openInputStream(Uri.parse(sourceFileUriString))
-            val fileData = ByteArray(stream!!.available())
-            stream.read(fileData)
-
-            Log.v(TAG, "file size=${fileData.size}")
-
-            val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
-
-            var transport = McuMgrBleTransport(reactContext, device)
-            transport.connect(device).timeout(60000).await()
-
-            val fsManager = FsManager(transport)
-
-            fsManager.fileUpload(targetFilePath!!, fileData, object : UploadCallback {
-                override fun onUploadProgressChanged(p0: Int, p1: Int, p2: Long) {
-                    Log.v("UploadCallback", "onUploadProgressChanged")
-                }
-
-                override fun onUploadFailed(p0: McuMgrException) {
-                    Log.v("UploadCallback", "onUploadFailed, ${p0.localizedMessage}")
-                    promise.reject(p0)
-                }
-
-                override fun onUploadCanceled() {
-                    Log.v("UploadCallback", "onUploadCanceled")
-                    promise.resolve(null)
-                }
-
-                override fun onUploadCompleted() {
-                    Log.v("UploadCallback", "onUploadCompleted")
-                    promise.resolve(null)
-                }
-            })
-        } catch (e: IOException) {
-            Log.v(this.TAG, "IOException")
-            promise.reject(e)
-        } catch (e: McuMgrException) {
-            Log.v(this.TAG, "McuMgrException")
-            promise.reject(e)
-        }
     }
 
     @ReactMethod
@@ -158,43 +71,48 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun createFileUpload(
+    fun createFileManager(
         id: String,
-        macAddress: String?,
-        uploadFileUriString: String?,
-        uploadFilePath:String?
-    ) {
+        macAddress: String?) {
         if (this.bluetoothAdapter == null) {
             throw Exception("No bluetooth adapter")
         }
 
-        if (uploads.contains(id)) {
-            throw Exception("Update ID already present")
+        if (fileManagers.contains(id)) {
+            throw Exception("file manager ID already present")
         }
 
         val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
-        val uploadFileUri = Uri.parse(uploadFileUriString)
 
-        this.uploads[id] = FileUpload(id, device, reactContext, uploadFileUri, uploadFilePath)
+        this.fileManagers[id] = FileManager(id, device, reactContext)
     }
 
     @ReactMethod
-    fun runFileUpload(id: String, promise: Promise) {
-        if (!uploads.contains(id)) {
-            promise.reject(Exception("upload ID not present"))
+    fun uploadFile(fileManagerId: String, sourceFileUriString: String?, targetFilePath: String?, promise: Promise) {
+        if (!fileManagers.contains(fileManagerId)) {
+            promise.reject(Exception("file manager ID not present"))
         }
-        uploads[id]!!.start(promise)
+        val uploadFileUri = Uri.parse(sourceFileUriString)
+        fileManagers[fileManagerId]!!.upload(promise, uploadFileUri, targetFilePath)
     }
 
     @ReactMethod
-    fun destroyFileUpload(id: String) {
-        if (!uploads.contains(id)) {
-            Log.w(this.TAG, "can't destroy upload ID ($id} not present")
+    fun statFile(fileManagerId: String, filePath: String?, promise: Promise) {
+        if (!fileManagers.contains(fileManagerId)) {
+            promise.reject(Exception("file manager ID not present"))
+        }
+        fileManagers[fileManagerId]!!.status(promise, filePath!!)
+    }
+
+    @ReactMethod
+    fun destroyFileManager(id: String) {
+        if (!fileManagers.contains(id)) {
+            Log.w(this.TAG, "can't destroy file manager ID ($id} not present")
             return
         }
-        Log.v(this.TAG, "destroying upload ID ($id}")
-        uploads[id]?.cancel()
-        uploads.remove(id)
+        Log.v(this.TAG, "destroying file manager ID ($id}")
+        fileManagers[id]?.tearDown()
+        fileManagers.remove(id)
     }
 
     @ReactMethod

@@ -9,6 +9,9 @@ class FsManagerExt(transporter: McuMgrTransport) : FsManager(transporter) {
 
     private val ID_STATUS = 1
 
+    /**
+     * Probes the file with the provided name (asynchronous).
+     */
     fun status(
         name: String,
         callback: McuMgrCallback<McuMgrFsDownloadResponse?>
@@ -19,6 +22,21 @@ class FsManagerExt(transporter: McuMgrTransport) : FsManager(transporter) {
         send(
             OP_READ, ID_STATUS, payloadMap, SHORT_TIMEOUT,
             McuMgrFsDownloadResponse::class.java, callback
+        )
+    }
+
+    /**
+     * Probes the file with the provided name (synchronous).
+     */
+    fun status(
+        name: String
+    ): McuMgrFsDownloadResponse {
+        val payloadMap = HashMap<String, Any>()
+        payloadMap["name"] = name
+
+        return send(
+            OP_READ, ID_STATUS, payloadMap, SHORT_TIMEOUT,
+            McuMgrFsDownloadResponse::class.java
         )
     }
 

@@ -2,51 +2,92 @@ package uk.co.playerdata.reactnativemcumanager
 
 import android.bluetooth.BluetoothDevice
 import android.net.Uri
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import io.runtime.mcumgr.McuMgrCallback
 import io.runtime.mcumgr.ble.McuMgrBleTransport
 import io.runtime.mcumgr.exception.McuMgrException
-import io.runtime.mcumgr.managers.FsManager
+import io.runtime.mcumgr.response.fs.McuMgrFsDownloadResponse
 import io.runtime.mcumgr.transfer.TransferController
 import io.runtime.mcumgr.transfer.UploadCallback
 
-class FileUpload(
+class FileManager(
     private val id: String,
     device: BluetoothDevice,
-    private val context: ReactApplicationContext,
-    private val uploadFileUri: Uri,
-    private val uploadFilePath: String?
+    private val context: ReactApplicationContext
 ) : UploadCallback {
-
+    private val TAG = "FileManager"
     private var transferController: TransferController? = null
     private var unsafePromise: Promise? = null
     private var transport = McuMgrBleTransport(context, device)
-    private var fsManager = FsManager(transport)
-    private var promiseComplete = false
+    private var fsManager = FsManagerExt(transport)
+    private var promisePending = false
 
     @Synchronized
     fun withSafePromise(block: (promise: Promise) -> Unit) {
         val promise = unsafePromise
-        if (promise != null && !promiseComplete) {
-            promiseComplete = true
+        if (promise != null && promisePending) {
+            promisePending = false
             block(promise)
         }
     }
 
-    fun start(promise: Promise) {
+    fun upload(promise: Promise, uploadFileUri: Uri, uploadFilePath: String?) {
+        Log.d(TAG, "upload, source=${uploadFileUri}, target=${uploadFilePath}")
+        Log.v(TAG, "transport isConnected=${transport.isConnected}")
+
+        if (promisePending) {
+            promise.reject(Exception("file manager is busy"))
+            return
+        }
+
+        promisePending = true
         unsafePromise = promise
+
         val stream = context.contentResolver.openInputStream(uploadFileUri)
         val imageData = ByteArray(stream!!.available())
 
         stream.read(imageData)
+        stream.close()
 
         transferController = fsManager.fileUpload(uploadFilePath!!, imageData, this)
     }
 
-    fun cancel() {
+    fun status(promise: Promise, filePath: String) {
+        Log.d(TAG, "status, file=${filePath}")
+        Log.v(TAG, "transport isConnected=${transport.isConnected}")
+
+        if (promisePending) {
+            promise.reject(Exception("file manager is busy"))
+            return
+        }
+
+        promisePending = true
+        unsafePromise = promise
+
+        fsManager.status(filePath, object : McuMgrCallback<McuMgrFsDownloadResponse?> {
+            override fun onResponse(p0: McuMgrFsDownloadResponse) {
+                Log.v("StatusResponse", "len=${p0.len}, rc=${p0.rc}")
+                withSafePromise { promise -> promise.resolve(p0.len) }
+            }
+
+            override fun onError(p0: McuMgrException) {
+                Log.e("StatusResponse", "error=${p0.localizedMessage}")
+                withSafePromise { promise -> promise.reject(p0) }
+            }
+        })
+    }
+
+    fun cancelUpload() {
         transferController?.cancel()
+    }
+
+    fun tearDown() {
+        transferController?.cancel()
+        transport.release()
     }
 
     override fun onUploadProgressChanged(current: Int, total: Int, timestamp: Long) {
@@ -62,18 +103,14 @@ class FileUpload(
     }
 
     override fun onUploadFailed(error: McuMgrException) {
-        transport.release()
         withSafePromise { promise -> promise.reject(error) }
     }
 
     override fun onUploadCanceled() {
-        transport.release()
         withSafePromise { promise -> promise.reject(InterruptedException("file upload is canceled")) }
     }
 
     override fun onUploadCompleted() {
-        transport.release()
         withSafePromise { promise -> promise.resolve(null) }
     }
-
 }
