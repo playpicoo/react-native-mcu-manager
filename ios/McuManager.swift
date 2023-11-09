@@ -6,9 +6,11 @@ import iOSMcuManagerLibrary
 @objc(RNMcuManager)
 class RNMcuManager: RCTEventEmitter {
     var upgrades: Dictionary<String, DeviceUpgrade>
+    var fileManagers: Dictionary<String, DeviceFileManager>
 
     override init() {
         self.upgrades = [:]
+        self.fileManagers = [:]
 
         super.init()
     }
@@ -16,7 +18,8 @@ class RNMcuManager: RCTEventEmitter {
     @objc override func supportedEvents() -> [String] {
         return [
             "uploadProgress",
-            "upgradeStateChanged"
+            "upgradeStateChanged",
+            "fileUploadProgress"
         ]
     }
 
@@ -57,7 +60,7 @@ class RNMcuManager: RCTEventEmitter {
             bleTransport.close()
 
             if (err != nil) {
-                reject("ERASE_ERR", err?.localizedDescription, err)
+                reject("CONFIRM_ERR", err?.localizedDescription, err)
                 return
             }
 
@@ -66,6 +69,45 @@ class RNMcuManager: RCTEventEmitter {
         }
     }
 
+    @objc
+    func createFileManager(_ id:String, bleId: String) -> Void {
+        fileManagers[id] = DeviceFileManager(id: id, bleId: bleId, eventEmitter: self)
+    }
+    
+    @objc
+    func uploadFile(_ id:String, sourceFileUriString: String, targetFilePath: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+        
+        guard let fileManager = self.fileManagers[id] else {
+            reject("ID_NOT_FOUND", "File manager object not found", nil)
+            return
+        }
+        
+        fileManager.upload(sourceFileURI: sourceFileUriString, targetFilePath: targetFilePath, resolver: resolve, rejecter: reject)
+    }
+
+    @objc
+    func statFile(_ id: String, filePath: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+
+        guard let fileManager = self.fileManagers[id] else {
+            reject("ID_NOT_FOUND", "File manager object not found", nil)
+            return
+        }
+        
+        fileManager.status(filePath: filePath, resolver: resolve, rejecter: reject)
+    }
+
+    @objc
+    func destroyFileManager(_ id: String) {
+        
+        guard let fileManager = self.fileManagers[id] else {
+            return
+        }
+
+        fileManager.tearDown()
+        
+        self.fileManagers[id] = nil
+    }
+    
     @objc
     func createUpgrade(_ id: String, bleId: String, updateFileUriString: String, updateOptions: Dictionary<String, Any>) -> Void {
         upgrades[id] = DeviceUpgrade(id: id, bleId: bleId, fileURI: updateFileUriString, options: updateOptions, eventEmitter: self)

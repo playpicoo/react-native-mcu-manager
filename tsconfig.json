@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@playerdata/react-native-mcu-manager": ["./src/index"]
+      "@playpicoo/react-native-mcu-manager": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

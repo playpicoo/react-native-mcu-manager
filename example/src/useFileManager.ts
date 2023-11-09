@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-import { FileManager } from '@playerdata/react-native-mcu-manager';
+import { FileManager } from '@playpicoo/react-native-mcu-manager';
 
 const useFileManager = (
     bleId: string | null,

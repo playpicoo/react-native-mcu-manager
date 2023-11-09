@@ -51,11 +51,10 @@ import {
     };
   
     /**
-     * Call to release native Upgrade class.
-     * Failure to do so may result in memory leaks.
+     * release native FileManager
      */
     destroy = () => {
-      McuManager.destroyFileUpload(this.id);
+      McuManager.destroyFileManager(this.id);
     };
   }
   

@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 
-import { UpgradeMode } from '@playerdata/react-native-mcu-manager';
+import { UpgradeMode } from '@playpicoo/react-native-mcu-manager';
 
 import useBluetoothDevices from './useBluetoothDevices';
 import useFilePicker from './useFilePicker';
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     color: 'black'
   },
   list: {
-    backgroundColor: 'black',
+    backgroundColor: 'white',
     padding: 16,
   },
 });

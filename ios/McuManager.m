@@ -27,6 +27,34 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
+                  createFileManager:
+                  NSString
+                  bleId: NSString
+                  )
+
+RCT_EXTERN_METHOD(
+                  uploadFile:
+                  NSString
+                  sourceFileUriString: NSString
+                  targetFilePath: NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  statFile:
+                  NSString
+                  filePath: NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  destroyFileManager:
+                  NSString
+                  )
+
+RCT_EXTERN_METHOD(
                   createUpgrade:
                   NSString
                   bleId: NSString
