@@ -16,7 +16,7 @@ import {
   type AddFileUploadListener = {
     (
       eventType: 'fileUploadProgress',
-      listener: ({ progress }: { progress: number }) => void,
+      listener: ({ progress, bytesSent }: { progress: number, bytesSent:number }) => void,
       context?: any
     ): EmitterSubscription;
   };

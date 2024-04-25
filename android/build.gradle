@@ -126,5 +126,6 @@ dependencies {
   api 'com.facebook.react:react-native:+'
 
   implementation 'no.nordicsemi.android:mcumgr-ble:1.6.0'
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
