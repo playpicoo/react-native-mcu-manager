@@ -12,10 +12,12 @@ import io.runtime.mcumgr.McuMgrErrorCode
 import io.runtime.mcumgr.ble.McuMgrBleTransport
 import io.runtime.mcumgr.exception.McuMgrErrorException
 import io.runtime.mcumgr.exception.McuMgrException
-import io.runtime.mcumgr.response.fs.McuMgrFsDownloadResponse
 import io.runtime.mcumgr.transfer.FileUploader
 import io.runtime.mcumgr.transfer.TransferController
 import io.runtime.mcumgr.transfer.UploadCallback
+import kotlinx.coroutines.CoroutineScope
+import uk.co.playerdata.reactnativemcumanager.response.HashResponse
+import uk.co.playerdata.reactnativemcumanager.response.StatusResponse
 
 class FileManager(
     private val id: String,
@@ -56,10 +58,8 @@ class FileManager(
         stream.read(imageData)
         stream.close()
 
-//        transferController = fsManager.fileUpload(uploadFilePath!!, imageData, this)
-
         val uploader = FileUploader(fsManager, uploadFilePath!!, imageData)
-        transferController = uploader.uploadAsync(this)
+        transferController = uploader.uploadAsync(this )
     }
 
     fun status(promise: Promise, filePath: String) {
@@ -74,8 +74,8 @@ class FileManager(
         promisePending = true
         unsafePromise = promise
 
-        fsManager.status(filePath, object : McuMgrCallback<McuMgrFsDownloadResponse?> {
-            override fun onResponse(p0: McuMgrFsDownloadResponse) {
+        fsManager.status(filePath, object : McuMgrCallback<StatusResponse?> {
+            override fun onResponse(p0: StatusResponse) {
                 Log.v(TAG, "status: len=${p0.len}, rc=${p0.rc}")
                 withSafePromise { promise -> promise.resolve(p0.len) }
             }
@@ -87,6 +87,38 @@ class FileManager(
                 }
                 else {
                     Log.e(TAG, "status: error=${p0.localizedMessage}")
+                    withSafePromise { promise -> promise.reject(p0) }
+                }
+            }
+        })
+    }
+
+    fun hash(promise: Promise, filePath: String) {
+        Log.d(TAG, "hash, file=${filePath}")
+        Log.v(TAG, "transport isConnected=${transport.isConnected}")
+
+        if (promisePending) {
+            promise.reject(Exception("file manager is busy"))
+            return
+        }
+
+        promisePending = true
+        unsafePromise = promise
+
+        fsManager.hash(filePath, object : McuMgrCallback<HashResponse?> {
+            override fun onResponse(p0: HashResponse) {
+                Log.v(TAG, "hash: output=${p0.output}, type=${p0.type} len=${p0.len}, rc=${p0.rc}")
+                val hashString = p0.output.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+                withSafePromise { promise -> promise.resolve(hashString) }
+            }
+
+            override fun onError(p0: McuMgrException) {
+                if (p0 is McuMgrErrorException && p0.code == McuMgrErrorCode.NO_ENTRY) {
+                    Log.d(TAG, "hash: file does not exist")
+                    withSafePromise { promise -> promise.resolve(null) }
+                }
+                else {
+                    Log.e(TAG, "hash: error=${p0.localizedMessage}")
                     withSafePromise { promise -> promise.reject(p0) }
                 }
             }
@@ -107,8 +139,10 @@ class FileManager(
         val progressPercent = current * 100 / total
 
         progressMap.putString("id", id)
+
         progressMap.putInt("progress", progressPercent)
         progressMap.putInt("bytesSent", current)
+        progressMap.putInt("totalSize", total)
 
         context
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)

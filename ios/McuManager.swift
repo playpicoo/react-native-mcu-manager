@@ -97,6 +97,17 @@ class RNMcuManager: RCTEventEmitter {
     }
 
     @objc
+    func getFileHash(_ id: String, filePath: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+
+        guard let fileManager = self.fileManagers[id] else {
+            reject("ID_NOT_FOUND", "File manager object not found", nil)
+            return
+        }
+        
+        fileManager.hash(filePath: filePath, resolver: resolve, rejecter: reject)
+    }
+
+    @objc
     func destroyFileManager(_ id: String) {
         
         guard let fileManager = self.fileManagers[id] else {

@@ -71,7 +71,7 @@ export default function App() {
     upgradeMode
   );
 
-  const { uploadFile, statFile, fileSize, fileUploadProgress, fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath)
+  const { uploadFile, statFile, getFileHash, fileSize, fileHash, fileUploadProgress, fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath)
 
   return (
     <SafeAreaView>
@@ -192,6 +192,15 @@ export default function App() {
             title="Stat File"
           />
           <Text>Size: {fileSize}</Text>
+        </View>
+
+        <View style={styles.block}>
+          <Button
+            disabled={!selectedDeviceId}
+            onPress={() => getFileHash()}
+            title="Get Hash"
+          />
+          <Text>SHA256 hash: {fileHash}</Text>
         </View>
 
       </ScrollView>

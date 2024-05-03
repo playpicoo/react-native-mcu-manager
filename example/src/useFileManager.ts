@@ -11,6 +11,7 @@ const useFileManager = (
     const [state, setState] = useState('');
     const [progress, setProgress] = useState<number>(0);
     const [fileSize, setFileSize] = useState<number>(-1);
+    const [fileHash, setFileHash] = useState<string>("")
 
     const fileManagerRef = useRef<FileManager>();
 
@@ -68,8 +69,27 @@ const useFileManager = (
         }
     };
 
+    const hash = async (): Promise<void> => {
+        console.log(`hash, bleId=${bleId}, path=${filePath}`);
 
-    return { uploadFile: upload, statFile:stat, fileManagerState: state, fileUploadProgress: progress, fileSize };
+        if(filePath == null) return;
+
+        try {
+            if (!fileManagerRef.current) {
+                throw new Error("unable to start upload, are all parameters set?")
+            }
+
+            const result = await fileManagerRef.current.getSha256Hash(filePath)
+            console.log(`hash, received hash=${result}`);
+            
+            setFileHash(result);
+        }
+        catch (err: any) {
+            setState(err.message);
+        }
+    };
+
+    return { uploadFile: upload, statFile:stat, getFileHash:hash, fileHash, fileManagerState: state, fileUploadProgress: progress, fileSize };
 };
 
 export default useFileManager;

@@ -128,4 +128,9 @@ dependencies {
   implementation 'no.nordicsemi.android:mcumgr-ble:1.6.0'
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+  // Import CBOR parser
+  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.14.2'
+  implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
 }

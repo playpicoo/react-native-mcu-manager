@@ -105,6 +105,14 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun getFileHash(fileManagerId: String, filePath: String?, promise: Promise) {
+        if (!fileManagers.contains(fileManagerId)) {
+            promise.reject(Exception("file manager ID not present"))
+        }
+        fileManagers[fileManagerId]!!.hash(promise, filePath!!)
+    }
+
+    @ReactMethod
     fun destroyFileManager(id: String) {
         if (!fileManagers.contains(id)) {
             Log.w(this.TAG, "can't destroy file manager ID ($id} not present")
