@@ -133,10 +133,14 @@ extension DeviceFileManager : FileUploadDelegate {
     func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
         if(self.eventEmitter.bridge != nil) {
             let progressPercent = bytesSent * 100 / fileSize
+
             self.eventEmitter.sendEvent(
                 withName: "fileUploadProgress", body: [
                     "id": self.id,
-                    "progress": progressPercent
+                    "progress": progressPercent,
+                    "bytesSent":bytesSent,
+                    "totalSize":fileSize
+
                 ]
             )
         }
