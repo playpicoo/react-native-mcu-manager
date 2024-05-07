@@ -60,7 +60,21 @@ class DeviceFileManager {
             reject(error.localizedDescription, error.localizedDescription, error)
         }
     }
-    
+
+    func write(data: [UInt8], filePath: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        
+        self.uploadResolver = resolve
+        self.uploadRejecter = reject
+        
+        let bytes = Data(data)
+        
+        let success = self.fileManager.upload(name: filePath, data: bytes, delegate: self)
+        
+        if (!success) {
+            return reject("error", "failed to start upload", nil)
+        }
+    }
+
     func status(filePath: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         
         self.fileManager.status(name: filePath) { [weak self] (response, error) -> Void in

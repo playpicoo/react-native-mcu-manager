@@ -37,6 +37,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     padding: 16,
   },
+  text: {
+    color:'red'
+  }
 });
 
 export default function App() {
@@ -48,6 +51,7 @@ export default function App() {
 
   const [uploadFilePath, onChangeUploadFilePath] = useState<string>("/ext/file.bin");
   const [statFilePath, onChangeStatFilePath] = useState<string>("/ext/file.bin");
+  const [writeFileData, onChangeWriteFileData] = useState<string>("");
 
   const [upgradeMode, setUpgradeMode] = useState<UpgradeMode | undefined>(
     undefined
@@ -71,7 +75,7 @@ export default function App() {
     upgradeMode
   );
 
-  const { uploadFile, statFile, getFileHash, fileSize, fileHash, fileUploadProgress, fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath)
+  const { uploadFile, writeFile, statFile, getFileHash, fileSize, fileHash, fileUploadProgress, fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath, writeFileData)
 
   const resetDevice = async () => {
     console.log(`resetting device ${selectedDeviceId}`);
@@ -104,7 +108,7 @@ export default function App() {
             keyExtractor={({ id }) => id}
             renderItem={({ item }) => (
               <View>
-                <Text>{item.name || item.id}</Text>
+                <Text style={styles.text}>{item.name || item.id}</Text>
 
                 <Button
                   title="Select"
@@ -179,6 +183,7 @@ export default function App() {
         <Text>State: {fileManagerState}</Text>
         <View style={styles.block}>
           <TextInput style={[styles.block, styles.input]} autoComplete='off' autoCorrect={false} value={uploadFilePath} onChangeText={onChangeUploadFilePath} />
+          <TextInput style={[styles.block, styles.input]} autoComplete='off' autoCorrect={false} value={writeFileData} onChangeText={onChangeWriteFileData} />
           <Text>Progress:</Text>
           <Text>
             {fileUploadProgress}
@@ -187,6 +192,10 @@ export default function App() {
             disabled={!selectedFile || !selectedDeviceId}
             onPress={() => uploadFile()}
             title="Upload File"
+          />
+          <Button
+            onPress={() => writeFile()}
+            title="Write File"
           />
         </View>
 

@@ -49,6 +49,15 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
+                  writeFile:
+                  NSString
+                  message: NSArray
+                  filePath: NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
                   statFile:
                   NSString
                   filePath: NSString

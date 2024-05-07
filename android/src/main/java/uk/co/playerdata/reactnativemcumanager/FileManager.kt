@@ -6,6 +6,7 @@ import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import io.runtime.mcumgr.McuMgrCallback
 import io.runtime.mcumgr.McuMgrErrorCode
@@ -15,9 +16,9 @@ import io.runtime.mcumgr.exception.McuMgrException
 import io.runtime.mcumgr.transfer.FileUploader
 import io.runtime.mcumgr.transfer.TransferController
 import io.runtime.mcumgr.transfer.UploadCallback
-import kotlinx.coroutines.CoroutineScope
 import uk.co.playerdata.reactnativemcumanager.response.HashResponse
 import uk.co.playerdata.reactnativemcumanager.response.StatusResponse
+
 
 class FileManager(
     private val id: String,
@@ -59,6 +60,27 @@ class FileManager(
         stream.close()
 
         val uploader = FileUploader(fsManager, uploadFilePath!!, imageData)
+        transferController = uploader.uploadAsync(this )
+    }
+
+    fun write(promise: Promise, data: ReadableArray, filePath: String) {
+        Log.d(TAG, "write, data=${data}, path=${filePath}")
+
+        if (promisePending) {
+            promise.reject(Exception("file manager is busy"))
+        }
+
+        promisePending = true
+        unsafePromise = promise
+
+        val bytes = ByteArray(data.size())
+
+        for (i in 0 until data.size()) {
+            bytes[i] = data.getInt(i).toByte()
+        }
+
+        val uploader = FileUploader(fsManager, filePath, bytes)
+
         transferController = uploader.uploadAsync(this )
     }
 

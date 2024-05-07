@@ -137,6 +137,14 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun writeFile(fileManagerId: String, data: ReadableArray?, filePath: String?, promise: Promise) {
+        if (!fileManagers.contains(fileManagerId)) {
+            promise.reject(Exception("file manager ID not present"))
+        }
+        fileManagers[fileManagerId]!!.write(promise, data!!, filePath!!)
+    }
+
+    @ReactMethod
     fun statFile(fileManagerId: String, filePath: String?, promise: Promise) {
         if (!fileManagers.contains(fileManagerId)) {
             promise.reject(Exception("file manager ID not present"))

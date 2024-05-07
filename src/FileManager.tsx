@@ -32,6 +32,7 @@ class FileManager {
   }
 
   upload = async (sourceFileUriString: string, targetFilePath: string): Promise<void> => McuManager.uploadFile(this.id, sourceFileUriString, targetFilePath);
+  write = async (data: number[], targetFilePath: string): Promise<void> => McuManager.writeFile(this.id, data, targetFilePath);
   stat = async (filePath: string): Promise<number> => McuManager.statFile(this.id, filePath);
   getSha256Hash = async (filePath: string): Promise<string | null> => McuManager.getFileHash(this.id, filePath);
 

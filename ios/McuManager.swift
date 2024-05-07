@@ -111,6 +111,19 @@ class RNMcuManager: RCTEventEmitter {
     }
 
     @objc
+    func writeFile(_ id:String, message: [NSNumber], filePath: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+        
+        guard let fileManager = self.fileManagers[id] else {
+            reject("ID_NOT_FOUND", "File manager object not found", nil)
+            return
+        }
+        
+        let bytes = message.map { UInt8(truncating: $0) }
+        
+        fileManager.write(data: bytes, filePath: filePath, resolver: resolve, rejecter: reject)
+    }
+    
+    @objc
     func statFile(_ id: String, filePath: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
 
         guard let fileManager = self.fileManagers[id] else {
