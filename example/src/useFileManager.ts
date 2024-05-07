@@ -11,7 +11,7 @@ const useFileManager = (
     const [state, setState] = useState('');
     const [progress, setProgress] = useState<number>(0);
     const [fileSize, setFileSize] = useState<number>(-1);
-    const [fileHash, setFileHash] = useState<string>("")
+    const [fileHash, setFileHash] = useState<string|null>("")
 
     const fileManagerRef = useRef<FileManager>();
 

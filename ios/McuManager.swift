@@ -22,10 +22,34 @@ class RNMcuManager: RCTEventEmitter {
             "fileUploadProgress"
         ]
     }
+    
+    @objc
+    func reset(_ bleId:String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let bleUuid = UUID(uuidString: bleId) else {
+            // TODO: return proper error
+            let error = NSError(domain: "", code: 200, userInfo: nil)
+            return reject("error", "failed to parse uuid", error)
+        }
+
+        let bleTransport = McuMgrBleTransport(bleUuid)
+        let manager = DefaultManager(transporter: bleTransport)
+        
+        manager.reset { (response: McuMgrResponse?, err:Error?)  in
+            bleTransport.close()
+            
+            if err != nil {
+                reject("RESET_ERR", err?.localizedDescription, err)
+                return
+            }
+            
+            resolve(nil)
+        }
+    }
 
     @objc
     func eraseImage(_ bleId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
         guard let bleUuid = UUID(uuidString: bleId) else {
+            // TODO: return proper error
             let error = NSError(domain: "", code: 200, userInfo: nil)
             return reject("error", "failed to parse uuid", error);
         }
@@ -49,6 +73,7 @@ class RNMcuManager: RCTEventEmitter {
     @objc
     func confirmImage(_ bleId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
         guard let bleUuid = UUID(uuidString: bleId) else {
+            // TODO: return proper error
             let error = NSError(domain: "", code: 200, userInfo: nil)
             return reject("error", "failed to parse uuid", error);
         }

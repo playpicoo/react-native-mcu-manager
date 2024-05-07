@@ -19,4 +19,8 @@ export const confirmImage = McuManager?.confirmImage as (
   bleId: string
 ) => Promise<void>;
 
+export const reset = McuManager?.reset as (
+  bleId: string
+) => Promise<void>;
+
 export { Upgrade, FirmwareUpgradeState, UpgradeOptions, UpgradeMode, MemoryAlignment, FileManager };

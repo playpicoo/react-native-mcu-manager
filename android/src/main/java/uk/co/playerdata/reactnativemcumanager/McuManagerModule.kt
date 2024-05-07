@@ -8,9 +8,12 @@ import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import io.runtime.mcumgr.McuMgrCallback
 import io.runtime.mcumgr.ble.McuMgrBleTransport
+import io.runtime.mcumgr.exception.McuMgrErrorException
 import io.runtime.mcumgr.exception.McuMgrException
+import io.runtime.mcumgr.managers.DefaultManager
 import io.runtime.mcumgr.managers.FsManager
 import io.runtime.mcumgr.managers.ImageManager
+import io.runtime.mcumgr.response.McuMgrResponse
 import io.runtime.mcumgr.response.fs.McuMgrFsDownloadResponse
 import io.runtime.mcumgr.transfer.UploadCallback
 import java.io.IOException
@@ -35,11 +38,13 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
         try {
             val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
 
-            var transport = McuMgrBleTransport(reactContext, device)
+            val transport = McuMgrBleTransport(reactContext, device)
             transport.connect(device).timeout(60000).await()
 
             val imageManager = ImageManager(transport);
             imageManager.erase()
+
+            transport.release()
 
             promise.resolve(null)
         } catch (e: Throwable) {
@@ -56,7 +61,7 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
         try {
             val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
 
-            var transport = McuMgrBleTransport(reactContext, device)
+            val transport = McuMgrBleTransport(reactContext, device)
             transport.connect(device).timeout(60000).await()
 
             val imageManager = ImageManager(transport);
@@ -65,6 +70,41 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
             transport.release()
 
             promise.resolve(null)
+        } catch (e: Throwable) {
+            promise.reject(e)
+        }
+    }
+
+    @ReactMethod
+    fun reset(macAddress: String?, promise: Promise) {
+        if (this.bluetoothAdapter == null) {
+            throw Exception("No bluetooth adapter")
+        }
+
+        try {
+            val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
+
+            val transport = McuMgrBleTransport(reactContext, device)
+            transport.connect(device).timeout(60000).await()
+
+            val manager = DefaultManager(transport);
+            manager.reset(object : McuMgrCallback<McuMgrResponse?> {
+                override fun onResponse(response: McuMgrResponse) {
+                    transport.release()
+
+                    if (!response.isSuccess) {
+                        promise.reject(McuMgrErrorException(response.returnCode))
+                    }
+                    else {
+                        promise.resolve(null)
+                    }
+                }
+
+                override fun onError(error: McuMgrException) {
+                    transport.release()
+                    promise.reject(error)
+                }
+            })
         } catch (e: Throwable) {
             promise.reject(e)
         }

@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 
-import { UpgradeMode } from '@playpicoo/react-native-mcu-manager';
+import { UpgradeMode, reset } from '@playpicoo/react-native-mcu-manager';
 
 import useBluetoothDevices from './useBluetoothDevices';
 import useFilePicker from './useFilePicker';
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     color: 'black'
   },
   list: {
-    backgroundColor: 'white',
+    backgroundColor: 'black',
     padding: 16,
   },
 });
@@ -72,6 +72,12 @@ export default function App() {
   );
 
   const { uploadFile, statFile, getFileHash, fileSize, fileHash, fileUploadProgress, fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath)
+
+  const resetDevice = async () => {
+    console.log(`resetting device ${selectedDeviceId}`);
+    if (selectedDeviceId != null)
+      await reset(selectedDeviceId)
+  }
 
   return (
     <SafeAreaView>
@@ -201,6 +207,13 @@ export default function App() {
             title="Get Hash"
           />
           <Text>SHA256 hash: {fileHash}</Text>
+        </View>
+
+        <View style={styles.block}>
+          <Button
+            onPress={resetDevice}
+            title='Reset'>
+          </Button>
         </View>
 
       </ScrollView>
