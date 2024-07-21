@@ -32,6 +32,11 @@ class FileManager(
     private var fsManager = FsManagerExt(transport)
     private var promisePending = false
 
+    init {
+        Log.d(TAG, "enable ble transport logging")
+        transport.setLoggingEnabled(true)
+    }
+
     @Synchronized
     fun withSafePromise(block: (promise: Promise) -> Unit) {
         val promise = unsafePromise

@@ -5403,9 +5403,19 @@ __metadata:
     react-native-ble-plx: "npm:^2.0.2"
     react-native-document-picker: "npm:^9.0.1"
     react-native-get-random-values: "npm:^1.8.0"
+    react-native-performance: "npm:^5.1.2"
     typescript: "npm:^4.6.4"
   languageName: unknown
   linkType: soft
+
+"react-native-performance@npm:^5.1.2":
+  version: 5.1.2
+  resolution: "react-native-performance@npm:5.1.2"
+  peerDependencies:
+    react-native: "*"
+  checksum: a23ad91c5547e0dc62fcdad0230ebd58c8dcfee236174fd2802da14ca3e97451afdba957a9d258e962cfbc4b1671d672547827e096a440ae36b4e967e4a49f50
+  languageName: node
+  linkType: hard
 
 "react-native@npm:0.68.1":
   version: 0.68.1

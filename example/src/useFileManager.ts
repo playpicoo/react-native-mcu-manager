@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-
 import { FileManager } from '@playpicoo/react-native-mcu-manager';
+import performance from 'react-native-performance'
 
 const useFileManager = (
     bleId: string | null,
@@ -89,20 +89,33 @@ const useFileManager = (
         }
     };
 
-    const hash = async (): Promise<void> => {
-        console.log(`hash, bleId=${bleId}, path=${filePath}`);
+    const hash = async (n: number = 1): Promise<void> => {
+        console.log(`hash, bleId=${bleId}, path=${filePath}, n=${n}`);
 
         if (filePath == null) return;
 
         try {
             if (!fileManagerRef.current) {
-                throw new Error("unable to start upload, are all parameters set?")
+                throw new Error("unable to get file hash, are all parameters set?")
             }
 
-            const result = await fileManagerRef.current.getSha256Hash(filePath)
-            console.log(`hash, received hash=${result}`);
+            let avg = 0
 
-            setFileHash(result);
+            for (let i = 0; i < n; i++) {
+                const t0 = performance.now()
+                const result = await fileManagerRef.current.getSha256Hash(filePath)
+                const t1 = performance.now()
+
+                const dt = t1 - t0
+
+                avg = ((avg * i) + dt) / (i + 1)
+
+                console.log(`hash, received hash=${result}, dt=${dt}`);
+
+                setFileHash(`${i} : ${result}`);
+            }
+
+            console.log(`hash, avg dt=${avg}`);
         }
         catch (err: any) {
             setState(err.message);

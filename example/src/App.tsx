@@ -212,7 +212,7 @@ export default function App() {
         <View style={styles.block}>
           <Button
             disabled={!selectedDeviceId}
-            onPress={() => getFileHash()}
+            onPress={() => getFileHash(25)}
             title="Get Hash"
           />
           <Text>SHA256 hash: {fileHash}</Text>
