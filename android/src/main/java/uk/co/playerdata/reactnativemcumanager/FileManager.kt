@@ -13,11 +13,12 @@ import io.runtime.mcumgr.McuMgrErrorCode
 import io.runtime.mcumgr.ble.McuMgrBleTransport
 import io.runtime.mcumgr.exception.McuMgrErrorException
 import io.runtime.mcumgr.exception.McuMgrException
+import io.runtime.mcumgr.managers.FsManager
+import io.runtime.mcumgr.response.fs.McuMgrFsSha256Response
+import io.runtime.mcumgr.response.fs.McuMgrFsStatusResponse
 import io.runtime.mcumgr.transfer.FileUploader
 import io.runtime.mcumgr.transfer.TransferController
 import io.runtime.mcumgr.transfer.UploadCallback
-import uk.co.playerdata.reactnativemcumanager.response.HashResponse
-import uk.co.playerdata.reactnativemcumanager.response.StatusResponse
 
 
 class FileManager(
@@ -29,7 +30,7 @@ class FileManager(
     private var transferController: TransferController? = null
     private var unsafePromise: Promise? = null
     private var transport = McuMgrBleTransport(context, device)
-    private var fsManager = FsManagerExt(transport)
+    private var fsManager = FsManager(transport)
     private var promisePending = false
 
     init {
@@ -65,7 +66,7 @@ class FileManager(
         stream.close()
 
         val uploader = FileUploader(fsManager, uploadFilePath!!, imageData)
-        transferController = uploader.uploadAsync(this )
+        transferController = uploader.uploadAsync(this)
     }
 
     fun write(promise: Promise, data: ReadableArray, filePath: String) {
@@ -86,7 +87,7 @@ class FileManager(
 
         val uploader = FileUploader(fsManager, filePath, bytes)
 
-        transferController = uploader.uploadAsync(this )
+        transferController = uploader.uploadAsync(this)
     }
 
     fun status(promise: Promise, filePath: String) {
@@ -101,8 +102,8 @@ class FileManager(
         promisePending = true
         unsafePromise = promise
 
-        fsManager.status(filePath, object : McuMgrCallback<StatusResponse?> {
-            override fun onResponse(p0: StatusResponse) {
+        fsManager.status(filePath, object : McuMgrCallback<McuMgrFsStatusResponse?> {
+            override fun onResponse(p0: McuMgrFsStatusResponse) {
                 Log.v(TAG, "status: len=${p0.len}, rc=${p0.rc}")
                 withSafePromise { promise -> promise.resolve(p0.len) }
             }
@@ -111,8 +112,7 @@ class FileManager(
                 if (p0 is McuMgrErrorException && p0.code == McuMgrErrorCode.NO_ENTRY) {
                     Log.d(TAG, "status: file does not exist")
                     withSafePromise { promise -> promise.resolve(-1) }
-                }
-                else {
+                } else {
                     Log.e(TAG, "status: error=${p0.localizedMessage}")
                     withSafePromise { promise -> promise.reject(p0) }
                 }
@@ -132,10 +132,14 @@ class FileManager(
         promisePending = true
         unsafePromise = promise
 
-        fsManager.hash(filePath, object : McuMgrCallback<HashResponse?> {
-            override fun onResponse(p0: HashResponse) {
-                Log.v(TAG, "hash: output=${p0.output}, type=${p0.type} len=${p0.len}, rc=${p0.rc}")
-                val hashString = p0.output.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+        fsManager.sha256(filePath, object : McuMgrCallback<McuMgrFsSha256Response?> {
+            override fun onResponse(p0: McuMgrFsSha256Response) {
+                Log.v(
+                    TAG,
+                    "hash: output=${p0.output}, type=${p0.type} len=${p0.len}, rc=${p0.rc}"
+                )
+                val hashString =
+                    p0.output.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
                 withSafePromise { promise -> promise.resolve(hashString) }
             }
 
@@ -143,8 +147,7 @@ class FileManager(
                 if (p0 is McuMgrErrorException && p0.code == McuMgrErrorCode.NO_ENTRY) {
                     Log.d(TAG, "hash: file does not exist")
                     withSafePromise { promise -> promise.resolve(null) }
-                }
-                else {
+                } else {
                     Log.e(TAG, "hash: error=${p0.localizedMessage}")
                     withSafePromise { promise -> promise.reject(p0) }
                 }

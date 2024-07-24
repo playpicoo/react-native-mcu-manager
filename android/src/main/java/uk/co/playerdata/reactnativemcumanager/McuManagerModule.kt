@@ -14,6 +14,7 @@ import io.runtime.mcumgr.managers.DefaultManager
 import io.runtime.mcumgr.managers.FsManager
 import io.runtime.mcumgr.managers.ImageManager
 import io.runtime.mcumgr.response.McuMgrResponse
+import io.runtime.mcumgr.response.dflt.McuMgrOsResponse
 import io.runtime.mcumgr.response.fs.McuMgrFsDownloadResponse
 import io.runtime.mcumgr.transfer.UploadCallback
 import java.io.IOException
@@ -88,21 +89,21 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
             transport.connect(device).timeout(60000).await()
 
             val manager = DefaultManager(transport);
-            manager.reset(object : McuMgrCallback<McuMgrResponse?> {
-                override fun onResponse(response: McuMgrResponse) {
+
+            manager.reset(object : McuMgrCallback<McuMgrOsResponse?> {
+                override fun onResponse(p0: McuMgrOsResponse) {
                     transport.release()
 
-                    if (!response.isSuccess) {
-                        promise.reject(McuMgrErrorException(response.returnCode))
-                    }
-                    else {
+                    if (!p0.isSuccess) {
+                        promise.reject(McuMgrErrorException(p0.returnCode))
+                    } else {
                         promise.resolve(null)
                     }
                 }
 
-                override fun onError(error: McuMgrException) {
+                override fun onError(p0: McuMgrException) {
                     transport.release()
-                    promise.reject(error)
+                    promise.reject(p0)
                 }
             })
         } catch (e: Throwable) {
@@ -113,7 +114,8 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun createFileManager(
         id: String,
-        macAddress: String?) {
+        macAddress: String?
+    ) {
         if (this.bluetoothAdapter == null) {
             throw Exception("No bluetooth adapter")
         }
@@ -128,7 +130,12 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun uploadFile(fileManagerId: String, sourceFileUriString: String?, targetFilePath: String?, promise: Promise) {
+    fun uploadFile(
+        fileManagerId: String,
+        sourceFileUriString: String?,
+        targetFilePath: String?,
+        promise: Promise
+    ) {
         if (!fileManagers.contains(fileManagerId)) {
             promise.reject(Exception("file manager ID not present"))
         }
@@ -137,7 +144,12 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun writeFile(fileManagerId: String, data: ReadableArray?, filePath: String?, promise: Promise) {
+    fun writeFile(
+        fileManagerId: String,
+        data: ReadableArray?,
+        filePath: String?,
+        promise: Promise
+    ) {
         if (!fileManagers.contains(fileManagerId)) {
             promise.reject(Exception("file manager ID not present"))
         }
