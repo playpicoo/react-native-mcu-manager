@@ -35,6 +35,7 @@ class FileManager {
   write = async (data: number[], targetFilePath: string): Promise<void> => McuManager.writeFile(this.id, data, targetFilePath);
   stat = async (filePath: string): Promise<number> => McuManager.statFile(this.id, filePath);
   getSha256Hash = async (filePath: string): Promise<string | null> => McuManager.getFileHash(this.id, filePath);
+  cancelUpload = () => { McuManager.cancelUpload(this.id) }
 
   addListener: AddFileUploadListener = (
     eventType: any,
@@ -51,6 +52,13 @@ class FileManager {
       context
     );
   };
+
+  /**
+   * reset the file manager. this cancels running uploads and releases the connection.
+   */
+  reset = () => {
+    McuManager.resetFileManager(this.id);
+  }
 
   /**
    * release native FileManager

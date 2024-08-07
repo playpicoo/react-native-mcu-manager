@@ -130,6 +130,14 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun cancelUpload(fileManagerId: String) {
+        if (!fileManagers.contains(fileManagerId)) {
+            Log.w(this.TAG, "can't cancel upload. file manager ID not present")
+        }
+        fileManagers[fileManagerId]!!.cancelUpload()
+    }
+
+    @ReactMethod
     fun uploadFile(
         fileManagerId: String,
         sourceFileUriString: String?,
@@ -170,6 +178,16 @@ class McuManagerModule(private val reactContext: ReactApplicationContext) :
             promise.reject(Exception("file manager ID not present"))
         }
         fileManagers[fileManagerId]!!.hash(promise, filePath!!)
+    }
+
+    @ReactMethod
+    fun resetFileManager(id: String) {
+        if (!fileManagers.contains(id)) {
+            Log.w(this.TAG, "can't reset file manager. ID ($id} not present")
+            return
+        }
+        Log.d(this.TAG, "resetting file manager ID ($id}")
+        fileManagers[id]?.tearDown()
     }
 
     @ReactMethod

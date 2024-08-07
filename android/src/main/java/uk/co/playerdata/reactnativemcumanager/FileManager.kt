@@ -20,7 +20,6 @@ import io.runtime.mcumgr.transfer.FileUploader
 import io.runtime.mcumgr.transfer.TransferController
 import io.runtime.mcumgr.transfer.UploadCallback
 
-
 class FileManager(
     private val id: String,
     device: BluetoothDevice,
@@ -47,6 +46,11 @@ class FileManager(
         }
     }
 
+    fun cancelUpload() {
+        Log.d(TAG, "upload, canceling upload")
+        transferController?.cancel()
+    }
+
     fun upload(promise: Promise, uploadFileUri: Uri, uploadFilePath: String?) {
         Log.d(TAG, "upload, source=${uploadFileUri}, target=${uploadFilePath}")
         Log.v(TAG, "transport isConnected=${transport.isConnected}")
@@ -65,7 +69,7 @@ class FileManager(
         stream.read(imageData)
         stream.close()
 
-        val uploader = FileUploader(fsManager, uploadFilePath!!, imageData)
+        val uploader = FileUploader(fsManager, uploadFilePath!!, imageData, 3, 4)
         transferController = uploader.uploadAsync(this)
     }
 
@@ -155,16 +159,14 @@ class FileManager(
         })
     }
 
-    fun cancelUpload() {
-        transferController?.cancel()
-    }
-
     fun tearDown() {
+        Log.d(TAG, "tearing down file manager. canceling any uploads and releasing the connection.")
         transferController?.cancel()
         transport.release()
     }
 
     override fun onUploadProgressChanged(current: Int, total: Int, timestamp: Long) {
+        Log.v(TAG, "upload progress, current=${current}, total=${total}, timestamp=${timestamp}")
         val progressMap = Arguments.createMap()
         val progressPercent = current * 100 / total
 
@@ -180,14 +182,17 @@ class FileManager(
     }
 
     override fun onUploadFailed(error: McuMgrException) {
+        Log.e(TAG, "upload failed, error=${error}")
         withSafePromise { promise -> promise.reject(error) }
     }
 
     override fun onUploadCanceled() {
+        Log.w(TAG, "upload canceled")
         withSafePromise { promise -> promise.reject(InterruptedException("file upload is canceled")) }
     }
 
     override fun onUploadCompleted() {
+        Log.d(TAG, "upload completed.")
         withSafePromise { promise -> promise.resolve(null) }
     }
 }

@@ -71,6 +71,19 @@ const useFileManager = (
         }
     }
 
+    const cancelUpload = () => {
+        try {
+            if (!fileManagerRef.current) {
+                throw new Error("unable to cancel upload, are all parameters set?")
+            }
+
+            fileManagerRef.current.cancelUpload()
+        }
+        catch (err: any) {
+            setState(err.message)
+        }
+    }
+
     const stat = async (): Promise<void> => {
         console.log(`stat, bleId=${bleId}, path=${filePath}`);
 
@@ -122,7 +135,21 @@ const useFileManager = (
         }
     };
 
-    return { uploadFile: upload, writeFile: write, statFile: stat, getFileHash: hash, fileHash, fileManagerState: state, fileUploadProgress: progress, fileSize };
+    return {
+        uploadFile: upload,
+        writeFile: write,
+        cancelUpload,
+        statFile: stat,
+        getFileHash: hash,
+        fileHash,
+        fileManagerState: state,
+        fileUploadProgress: progress,
+        fileSize
+    };
 };
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export default useFileManager;

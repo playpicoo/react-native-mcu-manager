@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   text: {
-    color:'red'
+    color: 'red'
   }
 });
 
@@ -75,7 +75,16 @@ export default function App() {
     upgradeMode
   );
 
-  const { uploadFile, writeFile, statFile, getFileHash, fileSize, fileHash, fileUploadProgress, fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath, writeFileData)
+  const {
+    uploadFile,
+    writeFile,
+    cancelUpload,
+    statFile,
+    getFileHash,
+    fileSize,
+    fileHash,
+    fileUploadProgress,
+    fileManagerState } = useFileManager(selectedDeviceId, selectedFile?.uri ?? null, uploadFilePath, writeFileData)
 
   const resetDevice = async () => {
     console.log(`resetting device ${selectedDeviceId}`);
@@ -197,6 +206,11 @@ export default function App() {
             onPress={() => writeFile()}
             title="Write File"
           />
+          <Button
+            onPress={() => cancelUpload()}
+            title="Cancel Upload"
+          />
+
         </View>
 
         <TextInput style={[styles.block, styles.input]} autoComplete='off' autoCorrect={false} value={statFilePath} onChangeText={onChangeStatFilePath} />
@@ -212,7 +226,7 @@ export default function App() {
         <View style={styles.block}>
           <Button
             disabled={!selectedDeviceId}
-            onPress={() => getFileHash(25)}
+            onPress={() => getFileHash(1)}
             title="Get Hash"
           />
           <Text>SHA256 hash: {fileHash}</Text>
