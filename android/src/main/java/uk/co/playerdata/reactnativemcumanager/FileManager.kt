@@ -19,6 +19,7 @@ import io.runtime.mcumgr.response.fs.McuMgrFsStatusResponse
 import io.runtime.mcumgr.transfer.FileUploader
 import io.runtime.mcumgr.transfer.TransferController
 import io.runtime.mcumgr.transfer.UploadCallback
+import java.util.Timer
 
 class FileManager(
     private val id: String,
@@ -69,7 +70,8 @@ class FileManager(
         stream.read(imageData)
         stream.close()
 
-        val uploader = FileUploader(fsManager, uploadFilePath!!, imageData, 3, 4)
+//        val uploader = FileUploader(fsManager, uploadFilePath!!, imageData, 3, 4)
+        val uploader = FileUploader(fsManager, uploadFilePath!!, imageData)
         transferController = uploader.uploadAsync(this)
     }
 
