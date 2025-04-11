@@ -23,7 +23,8 @@
     "prettier": "3.4.2",
     "semantic-release": "24.2.1"
   },
-  "resolutions": {
-    "expo": ">52.0.0"
-  }
+  "workspaces": [
+    "example",
+    "react-native-mcu-manager"
+  ]
 }

@@ -12,7 +12,7 @@
     "prebuild": "expo prebuild"
   },
   "dependencies": {
-    "@playpicoo/react-native-mcu-manager": "file:../react-native-mcu-manager",
+    "@playpicoo/react-native-mcu-manager": "workspace:*",
     "expo": "~52.0.42",
     "expo-build-properties": "~0.13.2",
     "expo-constants": "~17.0.4",

@@ -13,8 +13,7 @@
     "test": "expo-module test",
     "prepare": "expo-module prepare",
     "prepublishOnly": "expo-module prepublishOnly",
-    "expo-module": "expo-module",
-    "typecheck": "pnpm tsc --noEmit"
+    "expo-module": "expo-module"
   },
   "keywords": [
     "react-native",
@@ -22,7 +21,7 @@
     "android",
     "mcumgr"
   ],
-  "author": "PlayerData <dev@playerdata.com> (https://github.com/PlayerData)",
+  "author": "Picoo <info@picoo.com> (https://github.com/playpicoo)",
   "license": "MIT",
   "repository": "https://github.com/playpicoo/react-native-mcu-manager.git",
   "bugs": {
@@ -30,11 +29,10 @@
   },
   "homepage": "https://github.com/playpicoo/react-native-mcu-manager#readme",
   "devDependencies": {
-    "@types/react": "19.0.8",
     "expo-module-scripts": "4.0.3"
   },
   "peerDependencies": {
-    "expo-modules-core": ">2.0.0",
+    "expo": "*",
     "react": "*",
     "react-native": "*"
   }
