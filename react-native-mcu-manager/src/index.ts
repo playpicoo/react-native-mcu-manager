@@ -1,6 +1,6 @@
 import McuManagerModule from './ReactNativeMcuManagerModule'
-import type { FirmwareUpgradeState, MemoryAlignment, UpgradeOptions } from './Upgrade'
-import Upgrade, { UpgradeMode, UpgradeFileType } from './Upgrade'
+import type { FirmwareUpgradeState, UpgradeOptions } from './Upgrade'
+import Upgrade, { UpgradeMode, UpgradeFileType, MemoryAlignment } from './Upgrade'
 
 import FileManager from './FileManager';
 
@@ -16,5 +16,5 @@ export const resetDevice = McuManagerModule?.resetDevice as (
   bleId: string
 ) => Promise<void>;
 
-export { Upgrade, UpgradeMode, FileManager, UpgradeFileType }
-export type { FirmwareUpgradeState, MemoryAlignment, UpgradeOptions } 
+export { Upgrade, UpgradeMode, FileManager, UpgradeFileType, MemoryAlignment }
+export type { FirmwareUpgradeState, UpgradeOptions } 

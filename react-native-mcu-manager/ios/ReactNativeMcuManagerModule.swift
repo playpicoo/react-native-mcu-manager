@@ -214,5 +214,13 @@ public class ReactNativeMcuManagerModule: Module {
             fileManager.tearDown()
             self.fileManagers[id] = nil
         }
+        
+        Function("resetFileManager") { (id: String) in
+            guard let fileManager = self.fileManagers[id] else {
+                return
+            }
+            
+            fileManager.tearDown()
+        }
     }
 }

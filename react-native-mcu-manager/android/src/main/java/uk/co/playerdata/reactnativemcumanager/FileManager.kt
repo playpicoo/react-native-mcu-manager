@@ -169,6 +169,8 @@ class FileManager(
 
         val progressPercent = current * 100 / total
 
+        Log.v(TAG, "progressPercent=${progressPercent}")
+
         this.progressCallback?.let { it(progressPercent, current) }
     }
 

@@ -210,11 +210,11 @@ class ReactNativeMcuManagerModule() : Module() {
 
       val sourceFileUri = sourceFileURIString.toUri()
 
-      fileManager.upload(promise, sourceFileUri, targetFilePath, { percentage: Int, bytesSent: Int ->
-        appContext.executeOnJavaScriptThread( {
+      fileManager.upload(promise, sourceFileUri, targetFilePath) { percentage: Int, bytesSent: Int ->
+        appContext.executeOnJavaScriptThread {
           progressHandler(percentage, bytesSent)
-        })
-      })
+        }
+      }
     }
 
     AsyncFunction("writeFile") { id: String, data:IntArray, filePath: String, promise:Promise ->
@@ -262,6 +262,16 @@ class ReactNativeMcuManagerModule() : Module() {
       fileManagers.remove(id)
     }
 
+    Function("resetFileManager") { id: String ->
+      val fileManager = fileManagers[id]
+
+      if (fileManager == null) {
+        Log.w(TAG, "Can't reset file manager ID ($id} not present")
+        return@Function
+      }
+
+      fileManager.tearDown()
+    }
     //endregion
 
   }

@@ -1,7 +1,7 @@
 {
   "name": "@playpicoo/react-native-mcu-manager",
   "title": "React Native MCU Manager",
-  "version": "2.3.0-alpha.1",
+  "version": "2.3.0-alpha.5",
   "description": "React Native Wrappers for MCUMgr's Android / iOS client libraries",
   "source": "src/",
   "main": "build/index.js",
@@ -26,6 +26,10 @@
   "repository": "https://github.com/playpicoo/react-native-mcu-manager.git",
   "bugs": {
     "url": "https://github.com/playpicoo/react-native-mcu-manager/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com/"
   },
   "homepage": "https://github.com/playpicoo/react-native-mcu-manager#readme",
   "devDependencies": {

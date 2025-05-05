@@ -8,8 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "start": "expo start",
-    "pods": "pod-install --quiet",
-    "prebuild": "expo prebuild"
+    "pods": "pod-install --quiet"
   },
   "dependencies": {
     "@playpicoo/react-native-mcu-manager": "workspace:*",
