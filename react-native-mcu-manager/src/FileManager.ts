@@ -22,6 +22,8 @@ class FileManager {
     })
   write = async (data: number[], targetFilePath: string): Promise<void> =>
     ReactNativeMcuManager.writeFile(this.id, data, targetFilePath);
+  read = async (path: string): Promise<number[]> =>
+    ReactNativeMcuManager.readFile(this.id, path);
   stat = async (filePath: string): Promise<number> =>
     ReactNativeMcuManager.statFile(this.id, filePath);
   sha256 = async (filePath: string): Promise<string | null> =>

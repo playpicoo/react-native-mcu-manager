@@ -187,7 +187,16 @@ public class ReactNativeMcuManagerModule: Module {
             
             fileManager.write(data: data, filePath: filePath, promise)
         }
-        
+
+        AsyncFunction("readFile") { (id: String, filePath: String, promise: Promise) in
+            guard let fileManager = self.fileManagers[id] else {
+                promise.reject(Exception(name: "FileManagerNotFound", description: "FileManager object not found"))
+                return
+            }
+            
+            fileManager.read(path: filePath, promise)
+        }
+
         AsyncFunction("statFile") { (id: String, filePath: String, promise: Promise) in
             guard let fileManager = self.fileManagers[id] else {
                 promise.reject(Exception(name: "FileManagerNotFound", description: "FileManager object not found"))

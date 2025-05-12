@@ -228,6 +228,17 @@ class ReactNativeMcuManagerModule() : Module() {
       fileManager.write(promise, data, filePath)
     }
 
+    AsyncFunction("readFile") { id: String, filePath: String, promise:Promise ->
+      val fileManager = fileManagers[id]
+
+      if (fileManager == null) {
+        promise.reject(CodedException("FILE_MANAGER_ID_MISSING", "FileManager ID $id not present", null))
+        return@AsyncFunction
+      }
+
+      fileManager.read(promise, filePath)
+    }
+
     AsyncFunction("statFile") { id: String, filePath: String, promise:Promise ->
       val fileManager = fileManagers[id]
 

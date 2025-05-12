@@ -14,6 +14,7 @@ const useFileManager = (
     const [progress, setProgress] = useState<Progress | null>(null)
     const [fileSize, setFileSize] = useState<number | null>(null)
     const [fileHash, setFileHash] = useState<string | null>(null)
+    const [fileContent, setFileContent] = useState<string | null>(null)
 
     const fileManagerRef = useRef<FileManager | null>(null);
 
@@ -60,11 +61,30 @@ const useFileManager = (
 
             const data = fileData.split(' ').map(s => parseInt(s))
 
-
             console.log(`write, data=${data}, path=${filePath}`);
 
             setState('Writing')
             await fileManagerRef.current.write(data, filePath)
+            setState('Ready')
+        }
+        catch (err: any) {
+            setState(err.message)
+        }
+    }
+
+    const read = async (filePath: string): Promise<void> => {
+        if (filePath == null == null) return;
+
+        try {
+            if (!fileManagerRef.current) {
+                throw new Error("unable to read file, are all parameters set?")
+            }
+
+            setFileContent(null)
+            setState('Reading')
+            const result = await fileManagerRef.current.read(filePath)
+            const content = result.map((num: number) => num.toString(16).padStart(2, '0')).join(' ');
+            setFileContent(content)
             setState('Ready')
         }
         catch (err: any) {
@@ -79,9 +99,10 @@ const useFileManager = (
 
         try {
             if (!fileManagerRef.current) {
-                throw new Error("unable to start upload, are all parameters set?")
+                throw new Error("unable to stat file, are all parameters set?")
             }
 
+            setFileSize(null)
             setState('Performing stat')
             const result = await fileManagerRef.current.stat(filePath)
             setFileSize(result);
@@ -104,6 +125,7 @@ const useFileManager = (
 
             let avg = 0
 
+            setFileHash(null);
             for (let i = 0; i < n; i++) {
                 const t0 = performance.now()
                 setState(`Getting hash: ${i}`)
@@ -131,12 +153,14 @@ const useFileManager = (
     return {
         uploadFile: upload,
         writeFile: write,
+        readFile: read,
         statFile: stat,
         getFileHash: hash,
         fileHash,
         fileManagerState: state,
         fileUploadProgress: progress,
-        fileSize
+        fileSize,
+        fileContent
     };
 };
 

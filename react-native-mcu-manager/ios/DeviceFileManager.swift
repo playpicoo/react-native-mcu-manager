@@ -21,6 +21,8 @@ class DeviceFileManager {
     
     private var uploadPromise: Promise?
     
+    private var downloadPromise: Promise?
+    
     init?(id: String, bleId: String) {
         self.id = id
         self.bleId = bleId
@@ -71,6 +73,16 @@ class DeviceFileManager {
             promise.reject(Exception(name: "FileError", description: "Failed to write file"))
         }
     }
+    
+    func read(path: String, _ promise: Promise) {
+        self.downloadPromise = promise
+        
+        let success = self.fileManager.download(name: path, delegate: self)
+        
+        if !success {
+            promise.reject(Exception(name: "FileError", description: "Failed to read file"))
+        }
+    }
 
     func status(filePath: String, _ promise:Promise) {
         
@@ -79,7 +91,7 @@ class DeviceFileManager {
                 return
             }
                                  
-            if let error = error {
+            if error != nil {
                 promise.reject(Exception(name: "FileError", description: "Failed to stat file"))
             }
             
@@ -104,7 +116,7 @@ class DeviceFileManager {
                 return
             }
             
-            if let error = error {
+            if error != nil {
                 promise.reject(Exception(name: "FileError", description: "Failed to get sha256 hash"))
             }
             
@@ -164,3 +176,22 @@ extension DeviceFileManager : FileUploadDelegate {
     }
 }
 
+// - MARK: FileDownloadDelegate
+extension DeviceFileManager : FileDownloadDelegate {
+    func downloadProgressDidChange(bytesDownloaded: Int, fileSize: Int, timestamp: Date) {
+        
+    }
+    
+    func downloadDidFail(with error: any Error) {
+        self.downloadPromise?.reject(Exception(name: "DownloadFileFailed", description:error.localizedDescription))
+    }
+    
+    func downloadDidCancel() {
+        self.downloadPromise?.reject(Exception(name: "DownloadFileCanceled", description:"Download cancelled"))
+    }
+    
+    func download(of name: String, didFinish data: Data) {
+        self.downloadPromise?.resolve([UInt8](data))
+    }
+    
+}

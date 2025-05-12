@@ -14,6 +14,7 @@ import io.runtime.mcumgr.exception.McuMgrException
 import io.runtime.mcumgr.managers.FsManager
 import io.runtime.mcumgr.response.fs.McuMgrFsSha256Response
 import io.runtime.mcumgr.response.fs.McuMgrFsStatusResponse
+import io.runtime.mcumgr.transfer.DownloadCallback
 import io.runtime.mcumgr.transfer.FileUploader
 import io.runtime.mcumgr.transfer.TransferController
 import io.runtime.mcumgr.transfer.UploadCallback
@@ -22,7 +23,7 @@ class FileManager(
     private val id: String,
     device: BluetoothDevice,
     private val context: Context
-) : UploadCallback {
+) : UploadCallback, DownloadCallback {
     private val TAG = "FileManager"
     private var transferController: TransferController? = null
     private var transport = McuMgrBleTransport(context, device)
@@ -45,12 +46,17 @@ class FileManager(
         }
     }
 
-    fun upload(promise: Promise, uploadFileUri: Uri, uploadFilePath: String?, progressCallback: (Int, Int) -> Unit) {
+    fun upload(
+        promise: Promise,
+        uploadFileUri: Uri,
+        uploadFilePath: String?,
+        progressCallback: (Int, Int) -> Unit
+    ) {
 
         Log.d(TAG, "upload, source=${uploadFileUri}, target=${uploadFilePath}")
         Log.v(TAG, "transport isConnected=${transport.isConnected}")
 
-        if(!promiseComplete) {
+        if (!promiseComplete) {
             promise.resolve(CodedException("FILE_MANAGER_BUSY", "The File Manager is busy", null))
             return
         }
@@ -73,7 +79,7 @@ class FileManager(
     fun write(promise: Promise, data: IntArray, filePath: String) {
         Log.d(TAG, "write, data=${data}, path=${filePath}")
 
-        if(!promiseComplete) {
+        if (!promiseComplete) {
             promise.resolve(CodedException("FILE_MANAGER_BUSY", "The File Manager is busy", null))
             return
         }
@@ -92,11 +98,25 @@ class FileManager(
         transferController = uploader.uploadAsync(this)
     }
 
+    fun read(promise: Promise, filePath: String) {
+        Log.d(TAG, "read, path=${filePath}")
+
+        if (!promiseComplete) {
+            promise.resolve(CodedException("FILE_MANAGER_BUSY", "The File Manager is busy", null))
+            return
+        }
+
+        promiseComplete = false
+        unsafePromise = promise
+
+        transferController = fsManager.fileDownload(filePath, this)
+    }
+
     fun status(promise: Promise, filePath: String) {
         Log.d(TAG, "status, file=${filePath}")
         Log.v(TAG, "transport isConnected=${transport.isConnected}")
 
-        if(!promiseComplete) {
+        if (!promiseComplete) {
             promise.resolve(CodedException("FILE_MANAGER_BUSY", "The File Manager is busy", null))
             return
         }
@@ -116,7 +136,13 @@ class FileManager(
                     withSafePromise { promise -> promise.resolve(-1) }
                 } else {
                     Log.e(TAG, "status: error=${error.localizedMessage}")
-                    withSafePromise { promise -> promise.reject(ReactNativeMcuMgrException.fromMcuMgrException(error)) }
+                    withSafePromise { promise ->
+                        promise.reject(
+                            ReactNativeMcuMgrException.fromMcuMgrException(
+                                error
+                            )
+                        )
+                    }
                 }
             }
         })
@@ -126,7 +152,7 @@ class FileManager(
         Log.d(TAG, "hash, file=${filePath}")
         Log.v(TAG, "transport isConnected=${transport.isConnected}")
 
-        if(!promiseComplete) {
+        if (!promiseComplete) {
             promise.resolve(CodedException("FILE_MANAGER_BUSY", "The File Manager is busy", null))
             return
         }
@@ -151,7 +177,13 @@ class FileManager(
                     withSafePromise { promise -> promise.resolve(null) }
                 } else {
                     Log.e(TAG, "hash: error=${error.localizedMessage}")
-                    withSafePromise { promise -> promise.reject(ReactNativeMcuMgrException.fromMcuMgrException(error)) }
+                    withSafePromise { promise ->
+                        promise.reject(
+                            ReactNativeMcuMgrException.fromMcuMgrException(
+                                error
+                            )
+                        )
+                    }
                 }
             }
         })
@@ -164,6 +196,7 @@ class FileManager(
         transport.release()
     }
 
+    //region UploadCallback Methods
     override fun onUploadProgressChanged(current: Int, total: Int, timestamp: Long) {
         Log.v(TAG, "upload progress, current=${current}, total=${total}, timestamp=${timestamp}")
 
@@ -176,17 +209,69 @@ class FileManager(
 
     override fun onUploadFailed(error: McuMgrException) {
         Log.e(TAG, "upload failed, error=${error}")
-        withSafePromise { promise -> promise.reject(ReactNativeMcuMgrException.fromMcuMgrException(error)) }
+        withSafePromise { promise ->
+            promise.reject(
+                ReactNativeMcuMgrException.fromMcuMgrException(
+                    error
+                )
+            )
+        }
     }
 
     override fun onUploadCanceled() {
         Log.w(TAG, "upload canceled")
 
-        withSafePromise { promise -> promise.reject(CodedException("UPLOAD_CANCELLED", "Upload cancelled", null)) }
+        withSafePromise { promise ->
+            promise.reject(
+                CodedException(
+                    "UPLOAD_CANCELLED",
+                    "Upload cancelled",
+                    null
+                )
+            )
+        }
     }
 
     override fun onUploadCompleted() {
         Log.d(TAG, "upload completed.")
         withSafePromise { promise -> promise.resolve(null) }
     }
+    //endregion
+
+    //region DownloadCallback Methods
+    override fun onDownloadProgressChanged(p0: Int, p1: Int, p2: Long) {
+        Log.d(TAG, "download progress")
+    }
+
+    override fun onDownloadFailed(error: McuMgrException) {
+        Log.e(TAG, "download failed, error=${error}")
+
+        withSafePromise { promise ->
+            promise.reject(
+                ReactNativeMcuMgrException.fromMcuMgrException(
+                    error
+                )
+            )
+        }
+    }
+
+    override fun onDownloadCanceled() {
+        Log.w(TAG, "download canceled")
+
+        withSafePromise { promise ->
+            promise.reject(
+                CodedException(
+                    "DOWNLOAD_CANCELLED",
+                    "Download cancelled",
+                    null
+                )
+            )
+        }
+    }
+
+    override fun onDownloadCompleted(bytes: ByteArray) {
+        Log.d(TAG, "download completed")
+        withSafePromise { promise -> promise.resolve(bytes) }
+    }
+    //endregion
 }

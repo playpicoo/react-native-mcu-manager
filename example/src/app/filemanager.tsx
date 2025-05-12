@@ -50,10 +50,12 @@ const Update = () => {
         getFileHash,
         statFile,
         writeFile,
+        readFile,
         fileHash,
         fileManagerState,
         fileSize,
-        fileUploadProgress
+        fileUploadProgress,
+        fileContent
     } = useFileManager(
         selectedDevice?.deviceId || null
     )
@@ -79,6 +81,12 @@ const Update = () => {
     const onGetSizePressed = async () => {
         if (infoFilePath) {
             await statFile(infoFilePath)
+        }
+    }
+
+    const onReadPressed = async () => {
+        if (writeFilePath) {
+            await readFile(writeFilePath)
         }
     }
 
@@ -130,6 +138,11 @@ const Update = () => {
                     <TextInput style={styles.input} autoCapitalize='none' autoComplete='off' autoCorrect={false} placeholder='File Path' value={writeFilePath ?? undefined} onChangeText={setWriteFilePath} />
                     <TextInput style={styles.input} autoCapitalize='none' autoComplete='off' autoCorrect={false} placeholder='File Data' value={writeFileData ?? undefined} onChangeText={setWriteFileData} />
                     <Button onPress={onWritePressed} title="Write" disabled={!writeFileData || !writeFilePath || !selectedDevice} />
+                    <Button onPress={onReadPressed} title="Read" disabled={!writeFilePath || !selectedDevice} />
+                </View>
+
+                <View style={styles.block}>
+                    <Text>Content: {fileContent}</Text>
                 </View>
 
 
